@@ -34,6 +34,7 @@ class StereoReconstructor:
         :param right_dist_coeffs: [1x5] distortion coefficients
         :param left_to_right_rmat: [3x3] rotation matrix
         :param left_to_right_tvec: [3x1] translation vector
-        :return: [Nx3] point cloud in left camera space
+        :return: [NxM] point cloud in left camera space, where N is number
+        of points. M can be whatever the derived class decides to provide.
         """
         raise NotImplementedError("Derived classes should implement this.")

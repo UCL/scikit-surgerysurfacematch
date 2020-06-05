@@ -5,3 +5,6 @@
 numpy
 ipykernel
 nbsphinx
+opencv-contrib-python
+scikit-surgeryopencvcpp
+scikit-surgerypclcpp
