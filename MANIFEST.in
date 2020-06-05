@@ -1,0 +1,2 @@
+include versioneer.py
+include sksurgerysurfacematch/_version.py

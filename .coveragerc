@@ -1,0 +1,6 @@
+[run]
+omit = 
+        ./sksurgerysurfacematch/_version.py
+        ./sksurgerysurfacematch/__init__.py
+        ./sksurgerysurfacematch/__main__.py
+        ./sksurgerysurfacematch/ui/sksurgerysurfacematch_command_line.py
