@@ -1,7 +1,7 @@
 scikit-surgerysurfacematch
 ===============================
 
-.. image:: https://github.com/UCL/scikit-surgerysurfacematch/raw/master/project-icon.png
+.. image:: https://github.com/UCL/scikit-surgerysurfacematch /raw/master/project-icon.png
    :height: 128px
    :width: 128px
    :target: https://github.com/UCL/scikit-surgerysurfacematch
@@ -11,11 +11,11 @@ scikit-surgerysurfacematch
    :target: https://github.com/UCL/scikit-surgerysurfacematch/pipelines
    :alt: GitLab-CI test status
 
-.. image:: https://github.com/UCL/scikit-surgerysurfacematch/badges/master/coverage.svg
-    :target: https://github.com/UCL/scikit-surgerysurfacematch/commits/master
-    :alt: Test coverage
+.. image:: https://coveralls.io/repos/github/UCL/scikit-surgerysurfacematch/badge.svg?branch=master
+   :target: https://coveralls.io/github/UCL/scikit-surgerysurfacematch?branch=master
+   :alt: Coveralls coverage status
 
-.. image:: https://readthedocs.org/projects/scikit-surgerysurfacematch/badge/?version=latest
+.. image:: https://readthedocs.org/projects/scikit-surgerysurfacematch /badge/?version=latest
     :target: http://scikit-surgerysurfacematch.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
