@@ -16,9 +16,7 @@ class StereoReconstructor:
                     left_image: np.ndarray,
                     right_image: np.ndarray,
                     left_camera_matrix: np.ndarray,
-                    left_dist_coeffs: np.ndarray,
                     right_camera_matrix: np.ndarray,
-                    right_dist_coeffs: np.ndarray,
                     left_to_right_rmat: np.ndarray,
                     left_to_right_tvec: np.ndarray
                     ):
@@ -26,15 +24,13 @@ class StereoReconstructor:
         A derived class must implement this.
         Camera parameters are those obtained from OpenCV.
 
-        :param left_image: left image, RGB
-        :param right_image: right image, RGB
+        :param left_image: left image, BGR
+        :param right_image: right image, BGR
         :param left_camera_matrix: [3x3] camera matrix
-        :param left_dist_coeffs: [1x5] distortion coefficients
         :param right_camera_matrix: [3x3] camera matrix
-        :param right_dist_coeffs: [1x5] distortion coefficients
         :param left_to_right_rmat: [3x3] rotation matrix
         :param left_to_right_tvec: [3x1] translation vector
-        :return: [NxM] point cloud in left camera space, where N is number
-        of points. M can be whatever the derived class decides to provide.
+        :return: [Nx6] point cloud in left camera space, where N is number
+        of points, and 6 columns are x,y,z,r,g,b.
         """
         raise NotImplementedError("Derived classes should implement this.")

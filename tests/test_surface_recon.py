@@ -27,19 +27,14 @@ def test_stoyanov_2010():
     left_image = cv2.imread('tests/data/stoyanov/f7_dynamic_deint_L_0100.png')
     right_image = cv2.imread('tests/data/stoyanov/f7_dynamic_deint_R_0100.png')
 
-    reconstructor = sr.StoyanovReconstructor(
-        use_voxel_grid_reduction=True,
-        use_statistical_outlier_removal=True
-    )
+    reconstructor = sr.StoyanovReconstructor()
 
     points = reconstructor.reconstruct(left_image,
                                        right_image,
                                        left_intrinsics,
-                                       None,
                                        right_intrinsics,
-                                       None,
                                        rotation_matrix,
                                        translation_vector)
-    assert points.shape[1] == 3
-    assert points.shape[0] == 7524
+    assert points.shape[1] == 6
+    assert points.shape[0] == 58244
 
