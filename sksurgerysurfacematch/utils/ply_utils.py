@@ -2,6 +2,7 @@
 
 """ Methods for saving .ply files etc. """
 
+import os
 import numpy as np
 
 
@@ -12,8 +13,12 @@ def write_ply(ply_data: list, ply_file: str):
     :param ply_data: points and colours stored as list
     :param ply_file: file name
     """
+    dir_name = os.path.dirname(ply_file)
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+
     file = open(ply_file, "w")
-    file.write('''ply 
+    file.write('''ply
 format ascii 1.0
 element vertex %d
 property float x
@@ -44,7 +49,7 @@ def write_pointcloud(points: np.ndarray,
     """
     ply_data = []
     alpha = 0
-    for j in range(len(points)):
+    for j, _ in enumerate(points):
         ply_data.append("%f %f %f %d %d %d %d %d %d %d\n"%
                         (points[j][0], points[j][1], points[j][2],
                          1, 1, 1,

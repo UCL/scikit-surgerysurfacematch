@@ -4,6 +4,7 @@
 import pytest
 import numpy as np
 import cv2
+import sksurgerypclpython as pclp
 import sksurgerysurfacematch.algorithms.stoyanov_reconstructor as sr
 import sksurgerysurfacematch.utils.ply_utils as pl
 
@@ -41,3 +42,10 @@ def test_stoyanov_2010():
 
     pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/stoyanov.ply')
 
+    voxel_reduced_surface = pclp.down_sample_points(points[:, 0:3], 2, 2, 2)
+    pl.write_pointcloud(voxel_reduced_surface[:, 0:3], np.ones((voxel_reduced_surface.shape[0], 3)) * 255, 'tests/output/stoyanov_grid_reduced.ply')
+    print("Grid reduced cloud=" + str(voxel_reduced_surface.shape))
+
+    outlier_reduced_surface = pclp.remove_outlier_points(voxel_reduced_surface, 10, 1)
+    pl.write_pointcloud(outlier_reduced_surface[:, 0:3], np.ones((outlier_reduced_surface.shape[0], 3)) * 255, 'tests/output/stoyanov_outlier_reduced.ply')
+    print("Outlier reduced cloud=" + str(outlier_reduced_surface.shape))
