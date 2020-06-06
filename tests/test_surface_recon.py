@@ -5,6 +5,7 @@ import pytest
 import numpy as np
 import cv2
 import sksurgerysurfacematch.algorithms.stoyanov_reconstructor as sr
+import sksurgerysurfacematch.utils.ply_utils as pl
 
 
 def test_stoyanov_2010():
@@ -37,4 +38,6 @@ def test_stoyanov_2010():
                                        translation_vector)
     assert points.shape[1] == 6
     assert points.shape[0] == 58244
+
+    pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/stoyanov.ply')
 
