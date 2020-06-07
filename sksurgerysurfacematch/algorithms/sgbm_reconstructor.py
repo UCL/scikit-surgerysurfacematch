@@ -5,7 +5,8 @@
 import numpy as np
 import cv2
 
-import sksurgerysurfacematch.algorithms.reconstructor_with_rectified_images as sr
+import sksurgerysurfacematch.algorithms.\
+    reconstructor_with_rectified_images as sr
 
 
 class SGBMReconstructor(sr.StereoReconstructorWithRectifiedImages):

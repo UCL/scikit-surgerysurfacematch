@@ -75,3 +75,4 @@ def test_stoyanov_and_sgbm():
     assert points.shape[0] == 59964
 
     pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/sgbm.ply')
+    print("SGBM, cloud=" + str(points.shape))

@@ -10,11 +10,14 @@ import sksurgerysurfacematch.interfaces.stereo_reconstructor as sr
 
 class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
     """
-    Constructor.
+    Base class for those stereo reconstruction methods that work
+    from rectified images. This class handles rectification and
+    the necessary coordinate transformations. Note: The client calls
+    the reconstruct() method which requires undistorted images,
+    which are NOT already rectified. Its THIS class that does the
+    rectification for you, and calls through to the _compute_disparity()
+    method that derived classes must implement.
     """
-    def __init__(self):
-        super(StereoReconstructorWithRectifiedImages, self).__init__()
-
     def reconstruct(self,
                     left_image: np.ndarray,
                     left_camera_matrix: np.ndarray,
@@ -28,7 +31,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         """
         Implementation of stereo surface reconstruction that takes
         undistorted images, rectifies them, asks derived classes
-        to compute a disparity map on rectified images, and
+        to compute a disparity map on the rectified images, and
         then sorts out extracting points and their colours.
 
         Camera parameters are those obtained from OpenCV.
@@ -44,22 +47,26 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         :return: [Nx3] point cloud where the 3 columns
         are x, y, z in left camera space.
         """
-        w = left_image.shape[1]
-        h = left_image.shape[0]
-        R1, R2, P1, P2, Q, vp1, vp2 = cv2.stereoRectify(left_camera_matrix,
-                                                        left_dist_coeffs,
-                                                        right_camera_matrix,
-                                                        right_dist_coeffs,
-                                                        (w, h),
-                                                        left_to_right_rmat,
-                                                        left_to_right_tvec
-                                                        )
+        # pylint:disable=too-many-locals
+        (width, height) = (left_image.shape[1], left_image.shape[0])
+        r_1, r_2, p_1, p_2, q_mat, _, _ = cv2.stereoRectify(left_camera_matrix,
+                                                            left_dist_coeffs,
+                                                            right_camera_matrix,
+                                                            right_dist_coeffs,
+                                                            (width, height),
+                                                            left_to_right_rmat,
+                                                            left_to_right_tvec
+                                                            )
 
         undistort_rectify_map_l_x, undistort_rectify_map_l_y = \
-            cv2.initUndistortRectifyMap(left_camera_matrix, left_dist_coeffs, R1, P1, (w, h), cv2.CV_32FC1)
+            cv2.initUndistortRectifyMap(left_camera_matrix,
+                                        left_dist_coeffs,
+                                        r_1, p_1, (width, height), cv2.CV_32FC1)
 
         undistort_rectify_map_r_x, undistort_rectify_map_r_y = \
-            cv2.initUndistortRectifyMap(right_camera_matrix, right_dist_coeffs, R2, P2, (w, h), cv2.CV_32FC1)
+            cv2.initUndistortRectifyMap(right_camera_matrix,
+                                        right_dist_coeffs,
+                                        r_2, p_2, (width, height), cv2.CV_32FC1)
 
         left_rectified = cv2.remap(left_image, undistort_rectify_map_l_x,
                                    undistort_rectify_map_l_y, cv2.INTER_LINEAR)
@@ -69,7 +76,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
 
         disparity = self._compute_disparity(left_rectified, right_rectified)
 
-        points = cv2.reprojectImageTo3D(disparity, Q)
+        points = cv2.reprojectImageTo3D(disparity, q_mat)
         rgb_image = cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB)
 
         mask = disparity > disparity.min()
@@ -83,21 +90,18 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         result[:, 3:6] = out_colors
 
         # Convert from first (left) camera rectified to left camera unrectified
-        result[:, 0:3] = np.transpose(np.matmul(np.linalg.inv(R1), np.transpose(result[:, 0:3])))
+        result[:, 0:3] = np.transpose(
+            np.matmul(np.linalg.inv(r_1), np.transpose(result[:, 0:3])))
 
         return result
 
     def _compute_disparity(self, left_rectified_image, right_rectified_image):
         """
         Derived classes implement this to compute a disparity map from
-        pre-rectified images. But clients still call the reconstruct method.
-
-        (i.e. think of this method as 'protected'.)
+        pre-rectified images. But clients still call the reconstruct() method.
 
         :param left_rectified_image: undistorted, rectified image, BGR
         :param right_rectified_image: undistorted, rectified image, BGR
         :return: disparity map
         """
         raise NotImplementedError("Derived classes should implement this.")
-
-

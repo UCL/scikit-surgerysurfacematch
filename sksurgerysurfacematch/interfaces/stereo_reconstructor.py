@@ -7,11 +7,11 @@ import numpy as np
 
 class StereoReconstructor:
     """
-    Constructor.
+    Base class for stereo reconstruction algorithms. Clients call
+    the reconstruct() method, passing in undistorted images.
+    The output is an [Nx6] array where the N rows are each point,
+    and the 6 columns are x, y, z, r, g, b.
     """
-    def __init__(self):
-        return
-
     def reconstruct(self,
                     left_image: np.ndarray,
                     left_camera_matrix: np.ndarray,
@@ -34,7 +34,7 @@ class StereoReconstructor:
         :param right_dist_coeffs: [1xN] distortion coefficients
         :param left_to_right_rmat: [3x3] rotation matrix
         :param left_to_right_tvec: [3x1] translation vector
-        :return: [Nx6] point cloud in left camera space, where N is number
+        :return: [Nx6] point cloud in left camera space, where N is the number
         of points, and 6 columns are x,y,z,r,g,b.
         """
         raise NotImplementedError("Derived classes should implement this.")
