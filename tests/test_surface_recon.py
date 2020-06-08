@@ -53,7 +53,6 @@ def test_stoyanov_and_sgbm():
                                        None,               # as not used.
                                        rotation_matrix,
                                        translation_vector,
-                                       None,
                                        None)
 
     pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/stoyanov.ply')
@@ -80,13 +79,12 @@ def test_stoyanov_and_sgbm():
                                        None,               # as not used.
                                        rotation_matrix,
                                        translation_vector,
-                                       mask_image,         # MUST be single channel
                                        mask_image)         # MUST be single channel
 
     pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/stoyanov_masked.ply')
 
     assert points.shape[1] == 6
-    assert points.shape[0] == 4259
+    assert points.shape[0] == 5253
 
     reconstructor = sgbm.SGBMReconstructor()
     points = reconstructor.reconstruct(left_undistorted,
@@ -97,8 +95,7 @@ def test_stoyanov_and_sgbm():
                                        right_dist_coeffs,  # does need distortion coefficients
                                        rotation_matrix,
                                        translation_vector,
-                                       left_mask=None,
-                                       right_mask=None)
+                                       left_mask=None)
 
     pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/sgbm.ply')
     print("SGBM, cloud=" + str(points.shape))
@@ -114,8 +111,7 @@ def test_stoyanov_and_sgbm():
                                        right_dist_coeffs,  # does need distortion coefficients
                                        rotation_matrix,
                                        translation_vector,
-                                       left_mask=mask_image,
-                                       right_mask=mask_image)
+                                       left_mask=mask_image)
 
     pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/sgbm_masked.ply')
 

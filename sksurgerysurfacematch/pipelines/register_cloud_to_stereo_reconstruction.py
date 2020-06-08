@@ -18,7 +18,6 @@ class Register3DToStereoVideo:
                  surface_reconstructor: sr.StereoReconstructor,
                  rigid_registration: rr.RigidRegistration,
                  left_mask: np.ndarray = None,
-                 right_mask: np.ndarray = None,
                  voxel_reduction: list = None,
                  statistical_outlier_reduction: list = None
                  ):
@@ -29,7 +28,6 @@ class Register3DToStereoVideo:
         :param surface_reconstructor: Mandatory class to do reconstruction.
         :param rigid_registration: Mandatory class to perform rigid alignment.
         :param left_mask: a static mask to apply to stereo reconstruction.
-        :param right_mask: a static mask to apply to stereo reconstruction.
         :param voxel_reduction: [vx, vy, vz] parameters for PCL
         Voxel Grid reduction.
         :param statistical_outlier_reduction: [meanK, StdDev] parameters for
@@ -39,7 +37,6 @@ class Register3DToStereoVideo:
         self.surface_reconstructor = surface_reconstructor
         self.rigid_registration = rigid_registration
         self.left_static_mask = left_mask
-        self.right_static_mask = right_mask
         self.voxel_reduction = voxel_reduction
         self.statistical_outlier_reduction = statistical_outlier_reduction
 
@@ -75,18 +72,12 @@ class Register3DToStereoVideo:
         """
         left_mask = np.ones((left_image.shape[0],
                              left_image.shape[1])) * 255
-        right_mask = np.ones((right_image.shape[0],
-                              right_image.shape[1])) * 255
 
         if self.video_segmentor is not None:
             left_mask = self.video_segmentor.segment(left_image)
-            right_mask = self.video_segmentor.segment(right_image)
 
         if self.left_static_mask is not None:
             left_mask = np.logical_and(left_mask, self.left_static_mask)
-
-        if self.right_static_mask is not None:
-            right_mask = np.logical_and(right_mask, self.right_static_mask)
 
         reconstruction = \
             self.surface_reconstructor.reconstruct(left_image,
@@ -97,8 +88,7 @@ class Register3DToStereoVideo:
                                                    right_dist_coeffs,
                                                    left_to_right_rmat,
                                                    left_to_right_tvec,
-                                                   left_mask,
-                                                   right_mask
+                                                   left_mask
                                                    )
 
         reconstruction = reconstruction[:, 0:3]

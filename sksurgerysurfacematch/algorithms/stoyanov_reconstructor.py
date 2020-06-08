@@ -27,8 +27,7 @@ class StoyanovReconstructor(sr.StereoReconstructor):
                     right_dist_coeffs: np.ndarray,
                     left_to_right_rmat: np.ndarray,
                     left_to_right_tvec: np.ndarray,
-                    left_mask: np.ndarray = None,
-                    right_mask: np.ndarray = None
+                    left_mask: np.ndarray = None
                     ):
         """
         Implementation of dense stereo surface reconstruction using
@@ -45,12 +44,10 @@ class StoyanovReconstructor(sr.StereoReconstructor):
         :param left_to_right_rmat: [3x3] rotation matrix
         :param left_to_right_tvec: [3x1] translation vector
         :param left_mask: mask image, single channel, same size as left_image
-        :param right_mask: mask image, single channel, same size as right_image
         :return: [Nx6] point cloud where the 6 columns
         are x, y, z in left camera space, and r, g, b, colors.
         """
-
-        #Has format X,Y,Z (3D triangulated point), x_left, y_left,
+        # Has format X,Y,Z (3D triangulated point), x_left, y_left,
         # x_right, y_right (2D matches).
         points_stoyanov = \
             cvpy.reconstruct_points_using_stoyanov(left_image,
@@ -64,13 +61,12 @@ class StoyanovReconstructor(sr.StereoReconstructor):
 
         points_xyz = points_stoyanov[:, :3]
         left_matches_xy_points = points_stoyanov[:, 3:5]
-        right_matches_xy_points = points_stoyanov[:, 5:]
 
         num_points = points_stoyanov.shape[0]
 
         rgb_image = cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB)
 
-        if left_mask is not None and right_mask is not None:
+        if left_mask is not None:
 
             # Allocate the max required size, then we can trim it down at the
             # end.
@@ -78,15 +74,10 @@ class StoyanovReconstructor(sr.StereoReconstructor):
 
             i = 0
             for point_idx in range(0, num_points):
-                if not point_idx % 1000:
-                    print(f' {point_idx} {num_points}')
                 x_l_c = int(left_matches_xy_points[point_idx][0])
                 y_l_c = int(left_matches_xy_points[point_idx][1])
-                x_r_c = int(right_matches_xy_points[point_idx][0])
-                y_r_c = int(right_matches_xy_points[point_idx][1])
 
-                if left_mask[y_l_c][x_l_c] > 0 \
-                        and right_mask[y_r_c][x_r_c] > 0:
+                if left_mask[y_l_c][x_l_c] > 0:
 
                     row = np.array([[points_xyz[point_idx][0],
                                      points_xyz[point_idx][1],
