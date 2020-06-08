@@ -13,7 +13,7 @@ def test_point_cloud_registration():
         reg.Register3DToStereoVideo(None,
                                     sr.StoyanovReconstructor(),
                                     pir.RigidRegistration(),
-                                    None, None, None, None
+                                    None, None, None
                                     )
 
     pointcloud = np.loadtxt('tests/data/synthetic_liver/liver-H07.xyz')
