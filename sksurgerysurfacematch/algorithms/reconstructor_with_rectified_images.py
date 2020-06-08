@@ -110,6 +110,12 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         Derived classes implement this to compute a disparity map from
         pre-rectified images. But clients still call the reconstruct() method.
 
+        The returned disparity map, must be equivalent to what OpenCV
+        returns from other stereo reconstructors like the SGBM reconstructor.
+        That is an image, same size as left and right rectified images,
+        of type float32, where each pixel value represents left-to-right
+        disparity.
+        
         :param left_rectified_image: undistorted, rectified image, BGR
         :param right_rectified_image: undistorted, rectified image, BGR
         :return: disparity map
