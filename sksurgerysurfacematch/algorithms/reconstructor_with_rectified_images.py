@@ -115,7 +115,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         That is an image, same size as left and right rectified images,
         of type float32, where each pixel value represents left-to-right
         disparity.
-        
+
         :param left_rectified_image: undistorted, rectified image, BGR
         :param right_rectified_image: undistorted, rectified image, BGR
         :return: disparity map
