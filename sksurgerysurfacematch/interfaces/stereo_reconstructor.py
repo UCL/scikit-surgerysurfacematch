@@ -22,11 +22,11 @@ class StereoReconstructor:
                     right_dist_coeffs: np.ndarray,
                     left_to_right_rmat: np.ndarray,
                     left_to_right_tvec: np.ndarray,
-                    left_mask: np.ndarray = None,
-                    right_mask: np.ndarray = None
+                    left_mask: np.ndarray = None
                     ):
         """
         A derived class must implement this.
+
         Camera parameters are those obtained from OpenCV.
 
         :param left_image: left image, BGR
@@ -38,7 +38,6 @@ class StereoReconstructor:
         :param left_to_right_rmat: [3x3] rotation matrix
         :param left_to_right_tvec: [3x1] translation vector
         :param left_mask: mask image, single channel, same size as left_image
-        :param right_mask: mask image, single channel, same size as right_image
         :return: [Nx6] point cloud in left camera space, where N is the number
         of points, and 6 columns are x,y,z,r,g,b.
         """

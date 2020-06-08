@@ -28,8 +28,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
                     right_dist_coeffs: np.ndarray,
                     left_to_right_rmat: np.ndarray,
                     left_to_right_tvec: np.ndarray,
-                    left_mask: np.ndarray = None,
-                    right_mask: np.ndarray = None
+                    left_mask: np.ndarray = None
                     ):
         """
         Implementation of stereo surface reconstruction that takes
@@ -48,7 +47,6 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         :param left_to_right_rmat: [3x3] rotation matrix
         :param left_to_right_tvec: [3x1] translation vector
         :param left_mask: mask image, single channel, same size as left_image
-        :param right_mask: mask image, single channel, same size as right_image
         :return: [Nx6] point cloud where the 6 columns
         are x, y, z in left camera space, followed by r, g, b colours.
         """
@@ -86,9 +84,8 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
 
         mask = disparity > disparity.min()
 
-        if left_mask is not None and right_mask is not None:
-            mask = \
-                np.logical_and(np.logical_and(disparity, left_mask), right_mask)
+        if left_mask is not None:
+            mask = np.logical_and(disparity, left_mask)
 
         out_points = points[mask]
         out_colors = rgb_image[mask]

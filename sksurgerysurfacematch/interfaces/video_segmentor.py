@@ -11,9 +11,7 @@ class VideoSegmentor:
     For example, a deep network that can produce a mask of background=0,
     foreground=255.
     """
-    def segment(self,
-                image: np.ndarray
-                ):
+    def segment(self, image: np.ndarray):
         """
         A derived class must implement this.
 
