@@ -68,10 +68,12 @@ class StoyanovReconstructor(sr.StereoReconstructor):
 
         if left_mask is not None:
 
-            result = np.zeros((0, 6))
+            # Allocate the max required size, then we can trim it down at the
+            # end.
+            result = np.zeros((num_points, 6))
 
+            i = 0
             for point_idx in range(0, num_points):
-
                 x_l_c = int(left_matches_xy_points[point_idx][0])
                 y_l_c = int(left_matches_xy_points[point_idx][1])
 
@@ -84,7 +86,11 @@ class StoyanovReconstructor(sr.StereoReconstructor):
                                      rgb_image[y_l_c][x_l_c][1],
                                      rgb_image[y_l_c][x_l_c][2]
                                      ]])
-                    result = np.append(result, row, axis=0)
+
+                    result[i, :] = row
+                    i += 1
+
+            result = result[:i, :]
 
         else:
 
