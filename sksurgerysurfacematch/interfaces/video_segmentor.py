@@ -6,7 +6,11 @@ import numpy as np
 
 
 class VideoSegmentor:
-
+    """
+    Base class for classes that can segment a video image into a binary mask.
+    For example, a deep network that can produce a mask of background=0,
+    foreground=255.
+    """
     def segment(self,
                 image: np.ndarray
                 ):

@@ -60,7 +60,7 @@ class Register3DToStereoVideo:
         left_mask = np.ones((left_image.shape[0],
                              left_image.shape[1])) * 255
         right_mask = np.ones((right_image.shape[0],
-                             left_image.shape[1])) * 255
+                              right_image.shape[1])) * 255
 
         if self.video_segmentor is not None:
             left_mask = self.video_segmentor.segment(left_image)
