@@ -117,7 +117,7 @@ class Register3DToStereoVideo:
             point_cloud = np.transpose(point_cloud)
 
         # We register the fixed point cloud to the reconstructed point cloud.
-        residual, transform = self.rigid_registration.register(point_cloud,
+        _, transform = self.rigid_registration.register(point_cloud,
                                                         reconstruction
                                                         )
         # .. and then invert the result.

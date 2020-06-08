@@ -86,10 +86,10 @@ class StoyanovReconstructor(sr.StereoReconstructor):
                                      rgb_image[y_l_c][x_l_c][1],
                                      rgb_image[y_l_c][x_l_c][2]
                                      ]])
-                    
+
                     result[i, :] = row
                     i += 1
-            
+
             result = result[:i, :]
 
         else:
