@@ -49,14 +49,24 @@ class StoyanovReconstructor(sr.StereoReconstructor):
         :return: [Nx6] point cloud where the 6 columns
         are x, y, z in left camera space, and r, g, b, colors.
         """
-        points_7 = cvpy.reconstruct_points_using_stoyanov(left_image,
-                                                          left_camera_matrix,
-                                                          right_image,
-                                                          right_camera_matrix,
-                                                          left_to_right_rmat,
-                                                          left_to_right_tvec,
-                                                          self.use_hartley
-                                                          )
+
+        #Has format X,Y,Z (3D triangulated point), x_left, y_left,
+        # x_right, y_right (2D matches).
+        points_stoyanov = \
+            cvpy.reconstruct_points_using_stoyanov(left_image,
+                                                   left_camera_matrix,
+                                                   right_image,
+                                                   right_camera_matrix,
+                                                   left_to_right_rmat,
+                                                   left_to_right_tvec,
+                                                   self.use_hartley
+                                                   )
+
+        points_xyz = points_stoyanov[:, :3]
+        left_matches_xy_points = points_stoyanov[:, 3:5]
+        right_matches_xy_points = points_stoyanov[:, 5:]
+
+        num_points = points_stoyanov.shape[0]
 
         rgb_image = cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB)
 
@@ -64,16 +74,18 @@ class StoyanovReconstructor(sr.StereoReconstructor):
 
             result = np.zeros((0, 6))
 
-            for point_counter in range(0, points_7.shape[0]):
-                x_l_c = int(points_7[point_counter][3])
-                y_l_c = int(points_7[point_counter][4])
-                x_r_c = int(points_7[point_counter][5])
-                y_r_c = int(points_7[point_counter][6])
+            for point_idx in range(0, num_points):
+                x_l_c = int(left_matches_xy_points[point_idx][0])
+                y_l_c = int(left_matches_xy_points[point_idx][1])
+                x_r_c = int(right_matches_xy_points[point_idx][0])
+                y_r_c = int(right_matches_xy_points[point_idx][1])
+
                 if left_mask[y_l_c][x_l_c] > 0 \
                         and right_mask[y_r_c][x_r_c] > 0:
-                    row = np.array([[points_7[point_counter][0],
-                                     points_7[point_counter][1],
-                                     points_7[point_counter][2],
+
+                    row = np.array([[points_xyz[point_idx][0],
+                                     points_xyz[point_idx][1],
+                                     points_xyz[point_idx][2],
                                      rgb_image[y_l_c][x_l_c][0],
                                      rgb_image[y_l_c][x_l_c][1],
                                      rgb_image[y_l_c][x_l_c][2]
@@ -82,14 +94,14 @@ class StoyanovReconstructor(sr.StereoReconstructor):
 
         else:
 
-            result = np.zeros((points_7.shape[0], 6))
-            result[:, 0:3] = points_7[:, 0:3]
+            result = np.zeros((num_points, 6))
+            result[:, 0:3] = points_stoyanov[:, 0:3]
 
-            for point_counter in range(0, points_7.shape[0]):
-                x_c = int(points_7[point_counter][3])
-                y_c = int(points_7[point_counter][4])
-                result[point_counter][3] = rgb_image[y_c][x_c][0]
-                result[point_counter][4] = rgb_image[y_c][x_c][1]
-                result[point_counter][5] = rgb_image[y_c][x_c][2]
+            for point_idx in range(0, num_points):
+                x_c = int(points_stoyanov[point_idx][3])
+                y_c = int(points_stoyanov[point_idx][4])
+                result[point_idx][3] = rgb_image[y_c][x_c][0]
+                result[point_idx][4] = rgb_image[y_c][x_c][1]
+                result[point_idx][5] = rgb_image[y_c][x_c][2]
 
         return result
