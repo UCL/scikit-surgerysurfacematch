@@ -85,7 +85,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         mask = disparity > disparity.min()
 
         if left_mask is not None:
-            mask = np.logical_and(disparity, left_mask)
+            mask = np.logical_and(mask, left_mask)
 
         out_points = points[mask]
         out_colors = rgb_image[mask]
