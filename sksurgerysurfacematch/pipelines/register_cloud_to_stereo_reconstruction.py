@@ -11,7 +11,7 @@ import sksurgerysurfacematch.interfaces.rigid_registration as rr
 
 class Register3DToStereoVideo:
     """
-    Constructor, uses Dependency Injection for each main functionality.
+    Class for single-shot, registration of 3D point cloud to stereo video.
     """
     def __init__(self,
                  video_segmentor: vs.VideoSegmentor,
@@ -22,6 +22,19 @@ class Register3DToStereoVideo:
                  voxel_reduction: list = None,
                  statistical_outlier_reduction: list = None
                  ):
+        """
+        Uses Dependency Injection for each main component.
+
+        :param video_segmentor: Optional class to pre-segment the video.
+        :param surface_reconstructor: Mandatory class to do reconstruction.
+        :param rigid_registration: Mandatory class to perform rigid alignment.
+        :param left_mask: a static mask to apply to stereo reconstruction.
+        :param right_mask: a static mask to apply to stereo reconstruction.
+        :param voxel_reduction: [vx, vy, vz] parameters for PCL
+        Voxel Grid reduction.
+        :param statistical_outlier_reduction: [meanK, StdDev] parameters for
+        PCL Statistical Outlier Removal filter.
+        """
         self.video_segmentor = video_segmentor
         self.surface_reconstructor = surface_reconstructor
         self.rigid_registration = rigid_registration
@@ -39,7 +52,8 @@ class Register3DToStereoVideo:
                  right_camera_matrix: np.ndarray,
                  right_dist_coeffs: np.ndarray,
                  left_to_right_rmat: np.ndarray,
-                 left_to_right_tvec: np.ndarray
+                 left_to_right_tvec: np.ndarray,
+                 initial_transform: np.ndarray = None
                  ):
         """
         Main method to do a single 3D cloud to 2D stereo video registration.
@@ -55,6 +69,7 @@ class Register3DToStereoVideo:
         :param right_dist_coeffs: [1x5] distortion coeff's.
         :param left_to_right_rmat: [3x3] left-to-right rotation matrix.
         :param left_to_right_tvec: [1x3] left-to-right translation vector.
+        :param initial_transform: [4x4] of initial rigid transform.
         :return: [4x4] matrix, of point_cloud to left camera space.
         """
         left_mask = np.ones((left_image.shape[0],
@@ -101,6 +116,14 @@ class Register3DToStereoVideo:
                     reconstruction,
                     self.statistical_outlier_reduction[0],
                     self.statistical_outlier_reduction[1])
+
+        # Do initial alignment if we have one.
+        if initial_transform is not None:
+            point_cloud = \
+                np.matmul(
+                    initial_transform[0:3, 0:3], np.transpose(point_cloud)) \
+                + initial_transform[0:3, 3]
+            point_cloud = np.transpose(point_cloud)
 
         # We register the fixed point cloud to the reconstructed point cloud.
         registration = self.rigid_registration.register(point_cloud,
