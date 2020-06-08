@@ -43,6 +43,7 @@ class Register3DToStereoVideo:
         self.voxel_reduction = voxel_reduction
         self.statistical_outlier_reduction = statistical_outlier_reduction
 
+    # pylint: disable=too-many-arguments
     def register(self,
                  point_cloud: np.ndarray,
                  left_image: np.ndarray,
