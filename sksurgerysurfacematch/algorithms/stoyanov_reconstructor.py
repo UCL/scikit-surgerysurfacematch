@@ -17,6 +17,7 @@ class StoyanovReconstructor(sr.StereoReconstructor):
         super(StoyanovReconstructor, self).__init__()
         self.use_hartley = use_hartley
 
+    # pylint:disable=too-many-arguments
     def reconstruct(self,
                     left_image: np.ndarray,
                     left_camera_matrix: np.ndarray,
@@ -25,7 +26,9 @@ class StoyanovReconstructor(sr.StereoReconstructor):
                     right_camera_matrix: np.ndarray,
                     right_dist_coeffs: np.ndarray,
                     left_to_right_rmat: np.ndarray,
-                    left_to_right_tvec: np.ndarray
+                    left_to_right_tvec: np.ndarray,
+                    left_mask: np.ndarray = None,
+                    right_mask: np.ndarray = None
                     ):
         """
         Implementation of dense stereo surface reconstruction using
@@ -41,6 +44,8 @@ class StoyanovReconstructor(sr.StereoReconstructor):
         :param right_dist_coeffs: [1xN] distortion coefficients
         :param left_to_right_rmat: [3x3] rotation matrix
         :param left_to_right_tvec: [3x1] translation vector
+        :param left_mask: mask image, single channel, same size as left_image
+        :param right_mask: mask image, single channel, same size as right_image
         :return: [Nx6] point cloud where the 6 columns
         are x, y, z in left camera space, and r, g, b, colors.
         """
@@ -55,15 +60,36 @@ class StoyanovReconstructor(sr.StereoReconstructor):
 
         rgb_image = cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB)
 
-        result = np.zeros((points_7.shape[0], 6))
-        result[:, 0:3] = points_7[:, 0:3]
+        if left_mask is not None and right_mask is not None:
 
-        # Extract colours. Slow.
-        for point_counter in range(0, points_7.shape[0]):
-            x_c = int(points_7[point_counter][3])
-            y_c = int(points_7[point_counter][4])
-            result[point_counter][3] = rgb_image[y_c][x_c][0]
-            result[point_counter][4] = rgb_image[y_c][x_c][1]
-            result[point_counter][5] = rgb_image[y_c][x_c][2]
+            result = np.zeros((0, 6))
+
+            for point_counter in range(0, points_7.shape[0]):
+                x_l_c = int(points_7[point_counter][3])
+                y_l_c = int(points_7[point_counter][4])
+                x_r_c = int(points_7[point_counter][5])
+                y_r_c = int(points_7[point_counter][6])
+                if left_mask[y_l_c][x_l_c] > 0 \
+                        and right_mask[y_r_c][x_r_c] > 0:
+                    row = np.array([[points_7[point_counter][0],
+                                     points_7[point_counter][1],
+                                     points_7[point_counter][2],
+                                     rgb_image[y_l_c][x_l_c][0],
+                                     rgb_image[y_l_c][x_l_c][1],
+                                     rgb_image[y_l_c][x_l_c][2]
+                                     ]])
+                    result = np.append(result, row, axis=0)
+
+        else:
+
+            result = np.zeros((points_7.shape[0], 6))
+            result[:, 0:3] = points_7[:, 0:3]
+
+            for point_counter in range(0, points_7.shape[0]):
+                x_c = int(points_7[point_counter][3])
+                y_c = int(points_7[point_counter][4])
+                result[point_counter][3] = rgb_image[y_c][x_c][0]
+                result[point_counter][4] = rgb_image[y_c][x_c][1]
+                result[point_counter][5] = rgb_image[y_c][x_c][2]
 
         return result

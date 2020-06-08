@@ -35,6 +35,11 @@ def test_stoyanov_and_sgbm():
     left_image = cv2.imread('tests/data/stoyanov/f7_dynamic_deint_L_0100.png')
     right_image = cv2.imread('tests/data/stoyanov/f7_dynamic_deint_R_0100.png')
 
+    # I don't yet know why OpenCV tends to read a grey scale image as BGR.
+    mask_image = cv2.imread('tests/data/stoyanov/f7_dynamic_deint_mask_0100.png')
+    if len(mask_image.shape) > 2:
+        mask_image = cv2.cvtColor(mask_image, cv2.COLOR_BGR2GRAY)
+
     left_undistorted = cv2.undistort(left_image, left_intrinsics, left_dist_coeffs)
     right_undistorted = cv2.undistort(right_image, right_intrinsics, right_dist_coeffs)
 
@@ -47,11 +52,14 @@ def test_stoyanov_and_sgbm():
                                        right_intrinsics,
                                        None,               # as not used.
                                        rotation_matrix,
-                                       translation_vector)
-    assert points.shape[1] == 6
-    assert points.shape[0] == 58244
+                                       translation_vector,
+                                       None,
+                                       None)
 
     pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/stoyanov.ply')
+
+    assert points.shape[1] == 6
+    assert points.shape[0] == 58244
 
     voxel_reduced_surface = pclp.down_sample_points(points[:, 0:3], 2, 2, 2)
     pl.write_pointcloud(voxel_reduced_surface[:, 0:3], np.ones((voxel_reduced_surface.shape[0], 3)) * 255, 'tests/output/stoyanov_grid_reduced.ply')
@@ -61,6 +69,23 @@ def test_stoyanov_and_sgbm():
     pl.write_pointcloud(outlier_reduced_surface[:, 0:3], np.ones((outlier_reduced_surface.shape[0], 3)) * 255, 'tests/output/stoyanov_outlier_reduced.ply')
     print("Stoyanov, outlier reduced cloud=" + str(outlier_reduced_surface.shape))
 
+    # Now try Stoyanov masked version.
+    points = reconstructor.reconstruct(left_undistorted,   # should be undistorted, but doesn't need to be rectified
+                                       left_intrinsics,
+                                       None,               # as not used.
+                                       right_undistorted,  # should be undistorted, but doesn't need to be rectified
+                                       right_intrinsics,
+                                       None,               # as not used.
+                                       rotation_matrix,
+                                       translation_vector,
+                                       mask_image,         # MUST be single channel
+                                       mask_image)         # MUST be single channel
+
+    pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/stoyanov_masked.ply')
+
+    assert points.shape[1] == 6
+    assert points.shape[0] == 4259
+
     reconstructor = sgbm.SGBMReconstructor()
     points = reconstructor.reconstruct(left_undistorted,
                                        left_intrinsics,
@@ -69,10 +94,30 @@ def test_stoyanov_and_sgbm():
                                        right_intrinsics,
                                        right_dist_coeffs,  # does need distortion coefficients, to do stereo rectification.
                                        rotation_matrix,
-                                       translation_vector)
+                                       translation_vector,
+                                       left_mask=None,
+                                       right_mask=None)
+
+    pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/sgbm.ply')
+    print("SGBM, cloud=" + str(points.shape))
 
     assert points.shape[1] == 6
     assert points.shape[0] == 59964
 
-    pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/sgbm.ply')
-    print("SGBM, cloud=" + str(points.shape))
+    points = reconstructor.reconstruct(left_undistorted,
+                                       left_intrinsics,
+                                       left_dist_coeffs,   # does need distortion coefficients, to do stereo rectification.
+                                       right_undistorted,
+                                       right_intrinsics,
+                                       right_dist_coeffs,  # does need distortion coefficients, to do stereo rectification.
+                                       rotation_matrix,
+                                       translation_vector,
+                                       left_mask=mask_image,
+                                       right_mask=mask_image)
+
+    pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/sgbm_masked.ply')
+
+    assert points.shape[1] == 6
+    assert points.shape[0] == 6628
+
+    print("SGBM masked, cloud=" + str(points.shape))

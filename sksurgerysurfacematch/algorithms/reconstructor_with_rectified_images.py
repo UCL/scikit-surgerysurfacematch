@@ -10,14 +10,15 @@ import sksurgerysurfacematch.interfaces.stereo_reconstructor as sr
 
 class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
     """
-    Base class for those stereo reconstruction methods that work
+    Base class for those stereo reconstruction methods that work specifically
     from rectified images. This class handles rectification and
     the necessary coordinate transformations. Note: The client calls
     the reconstruct() method which requires undistorted images,
-    which are NOT already rectified. Its THIS class that does the
+    which are NOT already rectified. It's THIS class that does the
     rectification for you, and calls through to the _compute_disparity()
     method that derived classes must implement.
     """
+    # pylint:disable=too-many-arguments
     def reconstruct(self,
                     left_image: np.ndarray,
                     left_camera_matrix: np.ndarray,
@@ -26,7 +27,9 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
                     right_camera_matrix: np.ndarray,
                     right_dist_coeffs: np.ndarray,
                     left_to_right_rmat: np.ndarray,
-                    left_to_right_tvec: np.ndarray
+                    left_to_right_tvec: np.ndarray,
+                    left_mask: np.ndarray = None,
+                    right_mask: np.ndarray = None
                     ):
         """
         Implementation of stereo surface reconstruction that takes
@@ -44,8 +47,10 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         :param right_dist_coeffs: [1xN] distortion coefficients
         :param left_to_right_rmat: [3x3] rotation matrix
         :param left_to_right_tvec: [3x1] translation vector
-        :return: [Nx3] point cloud where the 3 columns
-        are x, y, z in left camera space.
+        :param left_mask: mask image, single channel, same size as left_image
+        :param right_mask: mask image, single channel, same size as right_image
+        :return: [Nx6] point cloud where the 6 columns
+        are x, y, z in left camera space, followed by r, g, b colours.
         """
         # pylint:disable=too-many-locals
         (width, height) = (left_image.shape[1], left_image.shape[0])
@@ -80,6 +85,11 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         rgb_image = cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB)
 
         mask = disparity > disparity.min()
+
+        if left_mask is not None and right_mask is not None:
+            mask = \
+                np.logical_and(np.logical_and(disparity, left_mask), right_mask)
+
         out_points = points[mask]
         out_colors = rgb_image[mask]
 
