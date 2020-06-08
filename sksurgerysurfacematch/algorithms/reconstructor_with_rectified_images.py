@@ -18,6 +18,18 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
     rectification for you, and calls through to the _compute_disparity()
     method that derived classes must implement.
     """
+    def __init__(self):
+        """
+        Constructor creates some member variables, so this class
+        becomes statefull. You call reconstruct() once, and then
+        you can call extract multiple times with different masks
+        to pull out different subsets of data.
+        """
+        self.disparity = None
+        self.points = None
+        self.rgb_image = None
+        self.r_1 = None
+
     # pylint:disable=too-many-arguments
     def reconstruct(self,
                     left_image: np.ndarray,
@@ -52,24 +64,28 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         """
         # pylint:disable=too-many-locals
         (width, height) = (left_image.shape[1], left_image.shape[0])
-        r_1, r_2, p_1, p_2, q_mat, _, _ = cv2.stereoRectify(left_camera_matrix,
-                                                            left_dist_coeffs,
-                                                            right_camera_matrix,
-                                                            right_dist_coeffs,
-                                                            (width, height),
-                                                            left_to_right_rmat,
-                                                            left_to_right_tvec
-                                                            )
+
+        self.r_1, r_2, p_1, p_2, q_mat, _, _ = \
+            cv2.stereoRectify(left_camera_matrix,
+                              left_dist_coeffs,
+                              right_camera_matrix,
+                              right_dist_coeffs,
+                              (width, height),
+                              left_to_right_rmat,
+                              left_to_right_tvec
+                              )
 
         undistort_rectify_map_l_x, undistort_rectify_map_l_y = \
             cv2.initUndistortRectifyMap(left_camera_matrix,
                                         left_dist_coeffs,
-                                        r_1, p_1, (width, height), cv2.CV_32FC1)
+                                        self.r_1, p_1,
+                                        (width, height), cv2.CV_32FC1)
 
         undistort_rectify_map_r_x, undistort_rectify_map_r_y = \
             cv2.initUndistortRectifyMap(right_camera_matrix,
                                         right_dist_coeffs,
-                                        r_2, p_2, (width, height), cv2.CV_32FC1)
+                                        r_2, p_2,
+                                        (width, height), cv2.CV_32FC1)
 
         left_rectified = cv2.remap(left_image, undistort_rectify_map_l_x,
                                    undistort_rectify_map_l_y, cv2.INTER_LINEAR)
@@ -77,18 +93,32 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         right_rectified = cv2.remap(right_image, undistort_rectify_map_r_x,
                                     undistort_rectify_map_r_y, cv2.INTER_LINEAR)
 
-        disparity = self._compute_disparity(left_rectified, right_rectified)
+        self.disparity = self._compute_disparity(left_rectified,
+                                                 right_rectified)
+        self.points = cv2.reprojectImageTo3D(self.disparity, q_mat)
+        self.rgb_image = cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB)
 
-        points = cv2.reprojectImageTo3D(disparity, q_mat)
-        rgb_image = cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB)
+        # Calls method below to extract data.
+        return self.extract(left_mask)
 
-        mask = disparity > disparity.min()
+    def extract(self, left_mask: np.ndarray):
+        """
+        Extracts the actual point cloud. This is a separate method,
+        so that you can reconstruct once using reconstruct(), and then
+        call this extract method with multiple masks, without incurring
+        the cost of multiple calls to the reconstruction algorithm, which
+        may be expensive.
+        :param left_mask: mask image, single channel, same size as left_image
+        :return: [Nx6] point cloud where the 6 columns
+        are x, y, z in left camera space, followed by r, g, b colours.
+        """
+        mask = self.disparity > self.disparity.min()
 
         if left_mask is not None:
             mask = np.logical_and(mask, left_mask)
 
-        out_points = points[mask]
-        out_colors = rgb_image[mask]
+        out_points = self.points[mask]
+        out_colors = self.rgb_image[mask]
 
         non_zero = np.count_nonzero(mask)
         result = np.zeros((non_zero, 6))
@@ -98,7 +128,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
 
         # Convert from first (left) camera rectified to left camera unrectified
         result[:, 0:3] = np.transpose(
-            np.matmul(np.linalg.inv(r_1), np.transpose(result[:, 0:3])))
+            np.matmul(np.linalg.inv(self.r_1), np.transpose(result[:, 0:3])))
 
         return result
 
