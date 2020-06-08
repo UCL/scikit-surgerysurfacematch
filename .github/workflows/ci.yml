@@ -39,7 +39,7 @@ jobs:
           coverage erase
           coverage run -a --source ./sksurgerysurfacematch -m pytest -v -s ./tests/
           coverage report -m
-          pylint --rcfile=tests/pylintrc sksurgerysurfacematch tests
+          pylint --rcfile=tests/pylintrc sksurgerysurfacematch
 
       - name: Run coveralls
         run: |

@@ -62,11 +62,13 @@ def test_stoyanov_and_sgbm():
     assert points.shape[0] == 58244
 
     voxel_reduced_surface = pclp.down_sample_points(points[:, 0:3], 2, 2, 2)
-    pl.write_pointcloud(voxel_reduced_surface[:, 0:3], np.ones((voxel_reduced_surface.shape[0], 3)) * 255, 'tests/output/stoyanov_grid_reduced.ply')
+    pl.write_pointcloud(voxel_reduced_surface[:, 0:3], np.ones((voxel_reduced_surface.shape[0], 3)) * 255,
+                        'tests/output/stoyanov_grid_reduced.ply')
     print("Stoyanov, grid reduced cloud=" + str(voxel_reduced_surface.shape))
 
     outlier_reduced_surface = pclp.remove_outlier_points(voxel_reduced_surface, 10, 1)
-    pl.write_pointcloud(outlier_reduced_surface[:, 0:3], np.ones((outlier_reduced_surface.shape[0], 3)) * 255, 'tests/output/stoyanov_outlier_reduced.ply')
+    pl.write_pointcloud(outlier_reduced_surface[:, 0:3], np.ones((outlier_reduced_surface.shape[0], 3)) * 255,
+                        'tests/output/stoyanov_outlier_reduced.ply')
     print("Stoyanov, outlier reduced cloud=" + str(outlier_reduced_surface.shape))
 
     # Now try Stoyanov masked version.
@@ -89,10 +91,10 @@ def test_stoyanov_and_sgbm():
     reconstructor = sgbm.SGBMReconstructor()
     points = reconstructor.reconstruct(left_undistorted,
                                        left_intrinsics,
-                                       left_dist_coeffs,   # does need distortion coefficients, to do stereo rectification.
+                                       left_dist_coeffs,   # does need distortion coefficients
                                        right_undistorted,
                                        right_intrinsics,
-                                       right_dist_coeffs,  # does need distortion coefficients, to do stereo rectification.
+                                       right_dist_coeffs,  # does need distortion coefficients
                                        rotation_matrix,
                                        translation_vector,
                                        left_mask=None,
@@ -106,10 +108,10 @@ def test_stoyanov_and_sgbm():
 
     points = reconstructor.reconstruct(left_undistorted,
                                        left_intrinsics,
-                                       left_dist_coeffs,   # does need distortion coefficients, to do stereo rectification.
+                                       left_dist_coeffs,   # does need distortion coefficients
                                        right_undistorted,
                                        right_intrinsics,
-                                       right_dist_coeffs,  # does need distortion coefficients, to do stereo rectification.
+                                       right_dist_coeffs,  # does need distortion coefficients
                                        rotation_matrix,
                                        translation_vector,
                                        left_mask=mask_image,
