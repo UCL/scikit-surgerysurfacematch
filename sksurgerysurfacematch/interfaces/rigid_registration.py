@@ -18,6 +18,6 @@ class RigidRegistration:
 
         :param fixed_cloud: [Nx3] fixed point cloud.
         :param moving_cloud: [Mx3] moving point cloud.
-        :return: [4x4] transformation matrix, moving-to-fixed space.
+        :return: residual, [4x4] transformation matrix, moving-to-fixed space.
         """
         raise NotImplementedError("Derived classes should implement this.")
