@@ -68,7 +68,7 @@ class Register3DToStereoVideo:
         :param left_to_right_rmat: [3x3] left-to-right rotation matrix.
         :param left_to_right_tvec: [1x3] left-to-right translation vector.
         :param initial_transform: [4x4] of initial rigid transform.
-        :return: [4x4] matrix, of point_cloud to left camera space.
+        :return: residual, [4x4] matrix, of point_cloud to left camera space.
         """
         left_mask = np.ones((left_image.shape[0],
                              left_image.shape[1])) * 255
@@ -117,10 +117,10 @@ class Register3DToStereoVideo:
             point_cloud = np.transpose(point_cloud)
 
         # We register the fixed point cloud to the reconstructed point cloud.
-        _, transform = self.rigid_registration.register(point_cloud,
-                                                        reconstruction
-                                                        )
+        residual, transform = self.rigid_registration.register(point_cloud,
+                                                               reconstruction
+                                                               )
         # .. and then invert the result.
         transform = np.linalg.inv(transform)
 
-        return transform
+        return residual, transform

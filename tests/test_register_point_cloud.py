@@ -7,6 +7,7 @@ import sksurgerysurfacematch.algorithms.pcl_icp_registration as pir
 import sksurgerysurfacematch.pipelines.register_cloud_to_stereo_reconstruction \
     as reg
 
+
 def test_point_cloud_registration():
 
     reg_points_to_vid = \
@@ -27,21 +28,21 @@ def test_point_cloud_registration():
 
     l2r_rmat = l2r_matrix[:3, :3]
     l2r_rvec = (cv2.Rodrigues(l2r_rmat))[0]
-    l2r_tvec = l2r_matrix[3,:]
+    l2r_tvec = l2r_matrix[3, :]
 
     pointcloud = pointcloud[::5, :]
     
     print(f'{len(pointcloud)} points in point cloud')
 
-    registration = reg_points_to_vid.register(pointcloud,
-                                              left_image,
-                                              left_intrinsics,
-                                              left_distortion,
-                                              right_image,
-                                              right_intrinsics,
-                                              right_distortion,
-                                              l2r_rmat,
-                                              l2r_tvec,
-                                              None)
-
+    residual, registration = reg_points_to_vid.register(pointcloud,
+                                                        left_image,
+                                                        left_intrinsics,
+                                                        left_distortion,
+                                                        right_image,
+                                                        right_intrinsics,
+                                                        right_distortion,
+                                                        l2r_rmat,
+                                                        l2r_tvec,
+                                                        None)
+    print(residual)
     print(registration)
