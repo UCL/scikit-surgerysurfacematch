@@ -6,7 +6,6 @@ import numpy as np
 import sksurgerypclpython as pclp
 import sksurgerysurfacematch.interfaces.rigid_registration as rr
 
-
 class RigidRegistration(rr.RigidRegistration):
     """
     Class that uses PCL implementation of ICP to register fixed/moving clouds.
