@@ -3,6 +3,7 @@
 """ Pipeline to register 3D point cloud to 2D stereo video """
 
 import numpy as np
+import sksurgerycore.transforms.matrix as mt
 import sksurgerypclpython as pclp
 import sksurgerysurfacematch.interfaces.video_segmentor as vs
 import sksurgerysurfacematch.interfaces.stereo_reconstructor as sr
@@ -70,14 +71,22 @@ class Register3DToStereoVideo:
         :param initial_transform: [4x4] of initial rigid transform.
         :return: residual, [4x4] matrix, of point_cloud to left camera space.
         """
-        left_mask = np.ones((left_image.shape[0],
-                             left_image.shape[1])) * 255
-
-        if self.video_segmentor is not None:
-            left_mask = self.video_segmentor.segment(left_image)
+        left_mask = None
 
         if self.left_static_mask is not None:
-            left_mask = np.logical_and(left_mask, self.left_static_mask)
+            left_mask = self.left_static_mask
+
+        if self.video_segmentor is not None:
+            dynamic_mask = self.video_segmentor.segment(left_image)
+
+            if left_mask is None:
+                left_mask = dynamic_mask
+            else:
+                left_mask = np.logical_and(left_mask, dynamic_mask)
+
+        if left_mask is None:
+            left_mask = np.ones((left_image.shape[0],
+                                 left_image.shape[1])) * 255
 
         reconstruction = \
             self.surface_reconstructor.reconstruct(left_image,
@@ -90,21 +99,19 @@ class Register3DToStereoVideo:
                                                    left_to_right_tvec,
                                                    left_mask
                                                    )
-
-        reconstruction = reconstruction[:, 0:3]
-
+        recon_points = reconstruction[:, 0:3]
         if self.voxel_reduction is not None:
-            reconstruction = \
+            recon_points = \
                 pclp.down_sample_points(
-                    reconstruction,
+                    recon_points,
                     self.voxel_reduction[0],
                     self.voxel_reduction[1],
                     self.voxel_reduction[2])
 
         if self.statistical_outlier_reduction is not None:
-            reconstruction = \
+            recon_points = \
                 pclp.remove_outlier_points(
-                    reconstruction,
+                    recon_points,
                     self.statistical_outlier_reduction[0],
                     self.statistical_outlier_reduction[1])
 
@@ -116,11 +123,26 @@ class Register3DToStereoVideo:
                 + initial_transform[0:3, 3]
             point_cloud = np.transpose(point_cloud)
 
-        # We register the fixed point cloud to the reconstructed point cloud.
-        residual, transform = self.rigid_registration.register(point_cloud,
-                                                               reconstruction
-                                                               )
-        # .. and then invert the result.
-        transform = np.linalg.inv(transform)
+        # Check sizes. Register fewest points to most points.
+        if point_cloud.shape[0] > recon_points.shape[0]:
+            residual, transform = \
+                self.rigid_registration.register(recon_points,
+                                                 point_cloud
+                                                 )
+            transform = np.linalg.inv(transform)
+        else:
+            residual, transform = \
+                self.rigid_registration.register(point_cloud,
+                                                 recon_points
+                                                 )
+
+        # Combine initial, if we have one.
+        if initial_transform is not None:
+            init_mat = \
+                mt.construct_rigid_transformation(
+                    initial_transform[0:3, 0:3],
+                    initial_transform[0:3, 3]
+                )
+            transform = np.matmul(transform, init_mat)
 
         return residual, transform
