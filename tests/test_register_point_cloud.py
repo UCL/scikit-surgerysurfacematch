@@ -8,9 +8,6 @@ import sksurgerysurfacematch.algorithms.pcl_icp_registration as pir
 import sksurgerysurfacematch.pipelines.register_cloud_to_stereo_reconstruction \
     as reg
 
-import sksurgeryvtk.widgets.vtk_overlay_window as ow
-
-
 def reproject_and_save(image,
                        camera_to_model, 
                        pointcloud, 
@@ -34,9 +31,10 @@ def reproject_and_save(image,
         x = int(x)
         y = int(y)
 
-        if x >= image.shape[1]:
+        # Skip points that aren't in the bounds of image
+        if 0 > x or x >= image.shape[1]:
             continue
-        if y >= image.shape[0]:
+        if 0 > y or y >= image.shape[0]:
             continue
 
         image[y, x, :] = [255, 0, 0]
@@ -65,6 +63,12 @@ def test_point_cloud_registration():
     l2r_rmat = l2r_matrix[:3, :3]
     l2r_tvec = l2r_matrix[3, :]
     
+    model_to_world = np.loadtxt('tests/data/synthetic_liver/model_to_world.txt')
+    camera_to_world = np.loadtxt('tests/data/synthetic_liver/camera_to_world.txt')
+
+
+    model_to_camera = camera_to_world @ np.linalg.inv(model_to_world)
+    camera_to_mod = np.linalg.inv(model_to_world) @ camera_to_world
 
     reg_points_to_vid = \
         reg.Register3DToStereoVideo(None,
@@ -87,7 +91,7 @@ def test_point_cloud_registration():
                                                         right_intrinsics,
                                                         right_distortion,
                                                         l2r_rmat,
-                                                        l2r_tvec,
+                                                        l2r_tvec
                                                         )
     camera_to_model = np.linalg.inv(registration)
 
@@ -102,7 +106,7 @@ def test_point_cloud_registration():
     # Run pipeline using reduced liver model, where most of the non visible
     # points have been deleted. Should give a better result.
     pointcloud = np.loadtxt(front_surface_only_pointcloud)
-    residual, registration = reg_points_to_vid.register(pointcloud,
+    residual1, registration = reg_points_to_vid.register(pointcloud,
                                                         left_image,
                                                         left_intrinsics,
                                                         left_distortion,
@@ -111,6 +115,7 @@ def test_point_cloud_registration():
                                                         right_distortion,
                                                         l2r_rmat,
                                                         l2r_tvec,
+
                                                         )
     camera_to_model = np.linalg.inv(registration)
 
