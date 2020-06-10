@@ -120,7 +120,7 @@ class Register3DToStereoVideo:
             point_cloud = \
                 np.matmul(
                     initial_transform[0:3, 0:3], np.transpose(point_cloud)) \
-                + initial_transform[0:3, 3]
+                + initial_transform[0:3, 3].reshape((3,1))
             point_cloud = np.transpose(point_cloud)
 
         # Check sizes. Register fewest points to most points.
