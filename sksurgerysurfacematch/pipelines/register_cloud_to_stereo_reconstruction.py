@@ -99,6 +99,7 @@ class Register3DToStereoVideo:
                                                    left_to_right_tvec,
                                                    left_mask
                                                    )
+
         recon_points = reconstruction[:, 0:3]
         if self.voxel_reduction is not None:
             recon_points = \
@@ -124,17 +125,11 @@ class Register3DToStereoVideo:
             point_cloud = np.transpose(point_cloud)
 
         # Check sizes. Register fewest points to most points.
-        if point_cloud.shape[0] > recon_points.shape[0]:
-            residual, transform = \
-                self.rigid_registration.register(recon_points,
-                                                 point_cloud
-                                                 )
-            transform = np.linalg.inv(transform)
-        else:
-            residual, transform = \
-                self.rigid_registration.register(point_cloud,
-                                                 recon_points
-                                                 )
+        residual, transform = \
+            self.rigid_registration.register(recon_points,
+                                             point_cloud
+                                             )
+        transform = np.linalg.inv(transform)
 
         # Combine initial, if we have one.
         if initial_transform is not None:
