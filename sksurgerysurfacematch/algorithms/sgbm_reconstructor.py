@@ -1,0 +1,51 @@
+# -*- coding: utf-8 -*-
+
+""" Surface reconstruction using OpenCV's SGBM reconstruction """
+
+import numpy as np
+import cv2
+
+import sksurgerysurfacematch.algorithms.\
+    reconstructor_with_rectified_images as sr
+
+
+class SGBMReconstructor(sr.StereoReconstructorWithRectifiedImages):
+    """
+    Constructor. See OpenCV StereoSGBM for parameter comments.
+    """
+    def __init__(self,
+                 min_disparity=16,
+                 num_disparities=96,
+                 block_size=5,
+                 p_1=8 * 3 * 3 * 3,
+                 p_2=32 * 3 * 3 * 3,
+                 disp_12_max_diff=1,
+                 uniqueness_ratio=10,
+                 speckle_window_size=100,
+                 speckle_range=2):
+        super(SGBMReconstructor, self).__init__()
+        self.stereo = cv2.StereoSGBM_create(
+            minDisparity=min_disparity,
+            numDisparities=num_disparities,
+            blockSize=block_size,
+            P1=p_1,
+            P2=p_2,
+            disp12MaxDiff=disp_12_max_diff,
+            uniquenessRatio=uniqueness_ratio,
+            speckleWindowSize=speckle_window_size,
+            speckleRange=speckle_range
+        )
+
+    def _compute_disparity(self, left_rectified_image, right_rectified_image):
+        """
+        Uses OpenCV's StereoSGBM to compute a disparity map from
+        two, already rectified (done in base class) images.
+
+        :param left_rectified_image: undistorted, rectified image, BGR
+        :param right_rectified_image: undistorted, rectified image, BGR
+        :return: disparity map
+        """
+        disparity = self.stereo.compute(
+            left_rectified_image,
+            right_rectified_image).astype(np.float32) / 16.0
+        return disparity

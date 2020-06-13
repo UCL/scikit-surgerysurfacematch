@@ -1,7 +1,7 @@
 scikit-surgerysurfacematch
 ===============================
 
-.. image:: https://github.com/UCL/scikit-surgerysurfacematch/raw/master/project-icon.png
+.. image:: https://github.com/UCL/scikit-surgerysurfacematch /raw/master/project-icon.png
    :height: 128px
    :width: 128px
    :target: https://github.com/UCL/scikit-surgerysurfacematch
@@ -11,11 +11,11 @@ scikit-surgerysurfacematch
    :target: https://github.com/UCL/scikit-surgerysurfacematch/pipelines
    :alt: GitLab-CI test status
 
-.. image:: https://github.com/UCL/scikit-surgerysurfacematch/badges/master/coverage.svg
-    :target: https://github.com/UCL/scikit-surgerysurfacematch/commits/master
-    :alt: Test coverage
+.. image:: https://coveralls.io/repos/github/UCL/scikit-surgerysurfacematch/badge.svg?branch=master
+   :target: https://coveralls.io/github/UCL/scikit-surgerysurfacematch?branch=master
+   :alt: Coveralls coverage status
 
-.. image:: https://readthedocs.org/projects/scikit-surgerysurfacematch/badge/?version=latest
+.. image:: https://readthedocs.org/projects/scikit-surgerysurfacematch /badge/?version=latest
     :target: http://scikit-surgerysurfacematch.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
@@ -25,16 +25,19 @@ Author: Matt Clarkson
 
 scikit-surgerysurfacematch is part of the `SNAPPY`_ software project, developed at the `Wellcome EPSRC Centre for Interventional and Surgical Sciences`_, part of `University College London (UCL)`_.
 
-scikit-surgerysurfacematch supports Python 2.7 and Python 3.6.
+scikit-surgerysurfacematch supports Python 3.6 - 3.8
 
-scikit-surgerysurfacematch is currently a demo project, which will add/multiply two numbers. Example usage:
+scikit-surgerysurfacematch contains algorithms that are useful in stereo reconstruction from video images, and matching to a pre-operative 3D model, represented as a point cloud.
 
-::
+Features
+--------
 
-    python sksurgerysurfacematch.py 5 8
-    python sksurgerysurfacematch.py 3 6 --multiply
+* Base classes (pure virtual interfaces), for video segmentation, stereo reconstruction, rigid registration / pose estimation. See ```sksurgerysurfacematch/algorithms```
+* A base class to handle rectification properly, and the right coordinate transformation, to save you the trouble.
+* Stereo reconstruction classes based on Stoyanov MICCAI 2010, and OpenCV SGBM reconstruction, using above interface, and both allowing for optional masking.
+* Rigid registration using PCL's ICP implementation, which is wrapped in scikit-surgerypclcpp
+* A pipeline to combine the above, segment a video pair, do reconstruction, and register to a 3D model, where each part can then be swapped with different implementations of the above.
 
-Please explore the project structure, and implement your own functionality.
 
 Developing
 ----------
