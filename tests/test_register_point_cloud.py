@@ -104,5 +104,5 @@ def test_point_cloud_registration():
     reproject_and_save(left_undistorted, registration, point_cloud, left_intrinsics,
                        outfile='tests/output/open_cas_tmi_registered.png')
 
-    assert np.isclose(residual, 4.294047767255042)
+    assert residual < 5.0
 
