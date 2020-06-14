@@ -2,11 +2,10 @@
 import cv2
 import numpy as np
 
+import sksurgeryvtk.models.vtk_surface_model as sksvtk
 import sksurgerysurfacematch.algorithms.sgbm_reconstructor as sr
 import sksurgerysurfacematch.algorithms.pcl_icp_registration as pir
-
-import sksurgerysurfacematch.pipelines.register_cloud_to_stereo_reconstruction \
-    as reg
+import sksurgerysurfacematch.pipelines.register_cloud_to_stereo_reconstruction as reg
 
 
 def reproject_and_save(image,
@@ -45,39 +44,31 @@ def reproject_and_save(image,
 
 def test_point_cloud_registration():
 
-    full_pointcloud = 'tests/data/synthetic_liver/liver-H07.xyz'
-    front_surface_only_pointcloud = 'tests/data/synthetic_liver/liver-H07-reduced.xyz'
+    left_intrinsics = np.loadtxt('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/calib.left.intrinsics.txt')
+    right_intrinsics = np.loadtxt('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/calib.right.intrinsics.txt')
+    left_distortion = np.loadtxt('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/calib.left.distortion.txt')
+    right_distortion = np.loadtxt('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/calib.right.distortion.txt')
+    l2r_matrix = np.loadtxt('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/calib.l2r.txt')
 
-    left_image = cv2.imread('tests/data/synthetic_liver/synthetic-left.png')
-    left_mask = cv2.imread('tests/data/synthetic_liver/synthetic-left-mask.png')
+    l2r_rmat = l2r_matrix[0:3, 0:3]
+    l2r_tvec = l2r_matrix[0:3, 3:4]
+
+    pointcloud_file = 'tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_CT_cut.stl'
+    model = sksvtk.VTKSurfaceModel(pointcloud_file, (1.0, 1.0, 1.0))
+
+    left_image = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_IMG_left.bmp')
+    left_undistorted = cv2.undistort(left_image, left_intrinsics, left_distortion)
+    left_mask = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_MASK_eval_inverted.png')
     left_mask = cv2.cvtColor(left_mask, cv2.COLOR_BGR2GRAY)
-    right_image = cv2.imread('tests/data/synthetic_liver/synthetic-right.png')
-    left_intrinsics = np.loadtxt('tests/data/synthetic_liver/calib/calib.left.intrinsics.txt')
-    right_intrinsics = np.loadtxt('tests/data/synthetic_liver/calib/calib.right.intrinsics.txt')
-    left_distortion = np.loadtxt('tests/data/synthetic_liver/calib/calib.left.distortion.txt')
-    right_distortion = np.loadtxt('tests/data/synthetic_liver/calib/calib.right.distortion.txt')
-    l2r_matrix = np.loadtxt('tests/data/synthetic_liver/calib/calib.l2r.txt')
+    right_image = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_IMG_right.bmp')
+    right_undistorted = cv2.undistort(right_image, right_intrinsics, right_distortion)
 
-    left_mask = cv2.imread('tests/data/synthetic_liver/mask-left.png', 0)
-    left_mask = cv2.threshold(left_mask, 127, 255, cv2.THRESH_BINARY)[1]
-
-    l2r_rmat = l2r_matrix[:3, :3]
-    l2r_tvec = l2r_matrix[3, :]
-
-    # Gold standard.
-    model_to_world = np.loadtxt('tests/data/synthetic_liver/model_to_world.txt')
-    camera_to_world = np.loadtxt('tests/data/synthetic_liver/camera_to_world.txt')
-
-    model_to_camera = np.linalg.inv(camera_to_world) @ model_to_world
-    print("Gold standard model to camera")
-    print(model_to_camera)
-
-    # Full model of liver, including front and back surface.
-    pointcloud = np.loadtxt(full_pointcloud)
+    point_cloud = model.get_points_as_numpy()
+    model_to_camera = np.eye(4)
 
     # Produce picture of gold standard registration.
-    reproject_and_save(left_image, model_to_camera, pointcloud, left_intrinsics,
-                       outfile='tests/output/synthetic_liver_full_gold.png')
+    reproject_and_save(left_undistorted, model_to_camera, point_cloud, left_intrinsics,
+                       outfile='tests/output/open_cas_tmi_gold.png')
 
     # Create registration pipeline.
     reg_points_to_vid = \
@@ -85,62 +76,33 @@ def test_point_cloud_registration():
                                     sr.SGBMReconstructor(),
                                     pir.RigidRegistration(),
                                     left_mask=left_mask,
+                                    z_range=[45, 65],
                                     voxel_reduction=[5, 5, 5],
                                     statistical_outlier_reduction=[10, 3]
                                     )
 
-    residual, registration = reg_points_to_vid.register(pointcloud,
-                                                        left_image,
+    residual, registration = reg_points_to_vid.register(point_cloud,
+                                                        left_undistorted,
                                                         left_intrinsics,
                                                         left_distortion,
-                                                        right_image,
+                                                        right_undistorted,
                                                         right_intrinsics,
                                                         right_distortion,
                                                         l2r_rmat,
                                                         l2r_tvec,
-                                                        model_to_camera  # Start off with the gold standard initial estimate.
+                                                        model_to_camera
                                                         )
 
-    print(f'Full model: {full_pointcloud}')
-    print(f'{len(pointcloud)} points in point cloud')
+    print(f'Model: {pointcloud_file}')
+    print(f'{len(point_cloud)} points in reference point cloud')
 
     print("Residual:" + str(residual))
     print("Registration, full point cloud:\n" + str(registration))
 
-    left_image = cv2.imread('tests/data/synthetic_liver/synthetic-left.png')
-    reproject_and_save(left_image, registration, pointcloud, left_intrinsics,
-                       outfile='tests/output/synthetic_liver_full_registered.png')
+    left_image = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_IMG_left.bmp')
+    left_undistorted = cv2.undistort(left_image, left_intrinsics, left_distortion)
+    reproject_and_save(left_undistorted, registration, point_cloud, left_intrinsics,
+                       outfile='tests/output/open_cas_tmi_registered.png')
 
-    # Run pipeline using reduced liver model, where most of the non visible
-    # points have been deleted. Should give a better result.
-    pointcloud = np.loadtxt(front_surface_only_pointcloud)
-
-    # Produce picture of gold standard registration of partial surface
-    left_image = cv2.imread('tests/data/synthetic_liver/synthetic-left.png')
-    reproject_and_save(left_image, model_to_camera, pointcloud, left_intrinsics,
-                       outfile='tests/output/synthetic_liver_partial_gold.png')
-
-    residual1, registration = reg_points_to_vid.register(pointcloud,
-                                                         left_image,
-                                                         left_intrinsics,
-                                                         left_distortion,
-                                                         right_image,
-                                                         right_intrinsics,
-                                                         right_distortion,
-                                                         l2r_rmat,
-                                                         l2r_tvec,
-                                                         model_to_camera # Start off with the gold standard initial estimate.
-                                                         )
-
-    print(f'Partial model: {front_surface_only_pointcloud}')
-    print(f'{len(pointcloud)} points in point cloud')
-    print("Residual:" + str(residual1))
-    print("Registration, partial point cloud:\n" + str(registration))
-
-    # Reset input image, to remove the pixels from the first projection
-    left_image = cv2.imread('tests/data/synthetic_liver/synthetic-left.png')
-    reproject_and_save(left_image, registration, pointcloud, left_intrinsics,
-                       outfile='tests/output/synthetic_liver_partial_registered.png')
-
-
+    assert np.isclose(residual, 4.294047767255042)
 
