@@ -7,9 +7,9 @@ scikit-surgerysurfacematch
    :target: https://github.com/UCL/scikit-surgerysurfacematch
    :alt: Logo
 
-.. image:: https://github.com/UCL/scikit-surgerysurfacematch/badges/master/build.svg
-   :target: https://github.com/UCL/scikit-surgerysurfacematch/pipelines
-   :alt: GitLab-CI test status
+.. image:: https://travis-ci.com/UCL/scikit-surgerysurfacematch.svg?branch=master
+   :target: https://travis-ci.com/github/UCL/scikit-surgerysurfacematch
+   :alt: Travis CI build status
 
 .. image:: https://coveralls.io/repos/github/UCL/scikit-surgerysurfacematch/badge.svg?branch=master
    :target: https://coveralls.io/github/UCL/scikit-surgerysurfacematch?branch=master
