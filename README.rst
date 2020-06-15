@@ -7,15 +7,15 @@ scikit-surgerysurfacematch
    :target: https://github.com/UCL/scikit-surgerysurfacematch
    :alt: Logo
 
-.. image:: https://travis-ci.com/UCL/scikit-surgerysurfacematch.svg?branch=master
-   :target: https://travis-ci.com/github/UCL/scikit-surgerysurfacematch
-   :alt: Travis CI build status
+.. image:: https://github.com/UCL/scikit-surgerysurfacematch/workflows/.github/workflows/ci.yml/badge.svg
+   :target: https://github.com/UCL/scikit-surgerysurfacematch/actions
+   :alt: GitHub Actions CI status
 
-.. image:: https://coveralls.io/repos/github/UCL/scikit-surgerysurfacematch/badge.svg?branch=master
+.. image:: https://coveralls.io/repos/github/UCL/scikit-surgerysurfacematch/badge.svg?branch=master&service=github
    :target: https://coveralls.io/github/UCL/scikit-surgerysurfacematch?branch=master
    :alt: Coveralls coverage status
 
-.. image:: https://readthedocs.org/projects/scikit-surgerysurfacematch /badge/?version=latest
+.. image:: https://readthedocs.org/projects/scikit-surgerysurfacematch/badge/?version=latest
     :target: http://scikit-surgerysurfacematch.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
