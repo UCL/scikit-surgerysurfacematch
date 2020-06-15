@@ -5,8 +5,7 @@
 numpy
 ipykernel
 nbsphinx
-opencv-contrib-python
 scikit-surgeryimage
 scikit-surgerycalibration
 scikit-surgeryopencvcpp
-scikit-surgerypclcpp
+scikit-surgerypclcpp>=0.3.0

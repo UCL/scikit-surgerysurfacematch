@@ -19,6 +19,7 @@ class Register3DToStereoVideo:
                  surface_reconstructor: sr.StereoReconstructor,
                  rigid_registration: rr.RigidRegistration,
                  left_mask: np.ndarray = None,
+                 z_range: list = None,
                  voxel_reduction: list = None,
                  statistical_outlier_reduction: list = None
                  ):
@@ -29,6 +30,7 @@ class Register3DToStereoVideo:
         :param surface_reconstructor: Mandatory class to do reconstruction.
         :param rigid_registration: Mandatory class to perform rigid alignment.
         :param left_mask: a static mask to apply to stereo reconstruction.
+        :param z_range: [min range, max range] to limit reconstructed points
         :param voxel_reduction: [vx, vy, vz] parameters for PCL
         Voxel Grid reduction.
         :param statistical_outlier_reduction: [meanK, StdDev] parameters for
@@ -38,6 +40,7 @@ class Register3DToStereoVideo:
         self.surface_reconstructor = surface_reconstructor
         self.rigid_registration = rigid_registration
         self.left_static_mask = left_mask
+        self.z_range = z_range
         self.voxel_reduction = voxel_reduction
         self.statistical_outlier_reduction = statistical_outlier_reduction
 
@@ -101,6 +104,14 @@ class Register3DToStereoVideo:
                                                    )
 
         recon_points = reconstruction[:, 0:3]
+
+        if self.z_range is not None:
+            recon_points = pclp.pass_through_filter(recon_points,
+                                                    'z',
+                                                    self.z_range[0],
+                                                    self.z_range[1],
+                                                    True)
+
         if self.voxel_reduction is not None:
             recon_points = \
                 pclp.down_sample_points(
@@ -124,7 +135,8 @@ class Register3DToStereoVideo:
                 + initial_transform[0:3, 3].reshape((3, 1))
             point_cloud = np.transpose(point_cloud)
 
-        # Check sizes. Register fewest points to most points.
+        # Do registration. Best to register recon points to
+        # the provided model (likely from CT or MR), and then invert.
         residual, transform = \
             self.rigid_registration.register(recon_points,
                                              point_cloud

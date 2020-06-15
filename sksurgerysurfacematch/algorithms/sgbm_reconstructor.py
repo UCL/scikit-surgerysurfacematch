@@ -15,11 +15,11 @@ class SGBMReconstructor(sr.StereoReconstructorWithRectifiedImages):
     """
     def __init__(self,
                  min_disparity=16,
-                 num_disparities=96,
-                 block_size=5,
-                 p_1=8 * 3 * 3 * 3,
-                 p_2=32 * 3 * 3 * 3,
-                 disp_12_max_diff=1,
+                 num_disparities=112,
+                 block_size=7,
+                 p_1=360,  # See Zhang 2019, DOI:10.1007/s11548-019-01974-6
+                 p_2=1440, # See Zhang 2019, DOI:10.1007/s11548-019-01974-6
+                 disp_12_max_diff=-1,
                  uniqueness_ratio=10,
                  speckle_window_size=100,
                  speckle_range=2):
