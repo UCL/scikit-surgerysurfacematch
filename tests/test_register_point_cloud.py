@@ -2,7 +2,6 @@
 import cv2
 import numpy as np
 
-import sksurgeryvtk.models.vtk_surface_model as sksvtk
 import sksurgerysurfacematch.algorithms.sgbm_reconstructor as sr
 import sksurgerysurfacematch.algorithms.pcl_icp_registration as pir
 import sksurgerysurfacematch.pipelines.register_cloud_to_stereo_reconstruction as reg
@@ -53,8 +52,8 @@ def test_point_cloud_registration():
     l2r_rmat = l2r_matrix[0:3, 0:3]
     l2r_tvec = l2r_matrix[0:3, 3:4]
 
-    pointcloud_file = 'tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_CT_cut.stl'
-    model = sksvtk.VTKSurfaceModel(pointcloud_file, (1.0, 1.0, 1.0))
+    pointcloud_file = 'tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_CT_cut.xyz'
+    point_cloud = np.loadtxt(pointcloud_file)
 
     left_image = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_IMG_left.bmp')
     left_undistorted = cv2.undistort(left_image, left_intrinsics, left_distortion)
@@ -63,7 +62,6 @@ def test_point_cloud_registration():
     right_image = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_IMG_right.bmp')
     right_undistorted = cv2.undistort(right_image, right_intrinsics, right_distortion)
 
-    point_cloud = model.get_points_as_numpy()
     model_to_camera = np.eye(4)
 
     # Produce picture of gold standard registration.

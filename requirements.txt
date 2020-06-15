@@ -7,6 +7,5 @@ ipykernel
 nbsphinx
 scikit-surgeryimage
 scikit-surgerycalibration
-scikit-surgeryvtk
 scikit-surgeryopencvcpp
 scikit-surgerypclcpp>=0.3.0
