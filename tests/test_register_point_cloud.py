@@ -1,44 +1,12 @@
+# -*- coding: utf-8 -*-
 
 import cv2
 import numpy as np
 
+import sksurgerysurfacematch.utils.projection_utils as pu
 import sksurgerysurfacematch.algorithms.sgbm_reconstructor as sr
 import sksurgerysurfacematch.algorithms.pcl_icp_registration as pir
 import sksurgerysurfacematch.pipelines.register_cloud_to_stereo_reconstruction as reg
-
-
-def reproject_and_save(image,
-                       model_to_camera,
-                       pointcloud, 
-                       intrinsics, 
-                       outfile):
-
-    """ Project model points back to 2D and save image. """
-    rmat = model_to_camera[:3, :3]
-    rvec = cv2.Rodrigues(rmat)[0]
-    tvec = model_to_camera[:3, 3]
-
-    projected, _ = cv2.projectPoints(pointcloud,
-                                     rvec,
-                                     tvec,
-                                     intrinsics,
-                                     None)
-
-    for i in range(projected.shape[0]):
-
-        x, y = projected[i][0]
-        x = int(x)
-        y = int(y)
-
-        # Skip points that aren't in the bounds of image
-        if 0 > x or x >= image.shape[1]:
-            continue
-        if 0 > y or y >= image.shape[0]:
-            continue
-
-        image[y, x, :] = [255, 0, 0]
-
-    cv2.imwrite(outfile, image)
 
 
 def test_point_cloud_registration():
@@ -65,8 +33,8 @@ def test_point_cloud_registration():
     model_to_camera = np.eye(4)
 
     # Produce picture of gold standard registration.
-    reproject_and_save(left_undistorted, model_to_camera, point_cloud, left_intrinsics,
-                       outfile='tests/output/open_cas_tmi_gold.png')
+    pu.reproject_and_save(left_undistorted, model_to_camera, point_cloud, left_intrinsics,
+                          output_file='tests/output/open_cas_tmi_gold.png')
 
     # Create registration pipeline.
     reg_points_to_vid = \
@@ -97,10 +65,8 @@ def test_point_cloud_registration():
     print("Residual:" + str(residual))
     print("Registration, full point cloud:\n" + str(registration))
 
-    left_image = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_IMG_left.bmp')
-    left_undistorted = cv2.undistort(left_image, left_intrinsics, left_distortion)
-    reproject_and_save(left_undistorted, registration, point_cloud, left_intrinsics,
-                       outfile='tests/output/open_cas_tmi_registered.png')
+    pu.reproject_and_save(left_undistorted, registration, point_cloud, left_intrinsics,
+                          output_file='tests/output/open_cas_tmi_registered.png')
 
     assert residual < 5.0
 
