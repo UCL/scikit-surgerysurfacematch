@@ -49,8 +49,7 @@ def test_point_cloud_registration():
                                     l2r_tvec,
                                     left_mask=left_mask,
                                     z_range=[45, 65],
-                                    voxel_reduction=[5, 5, 5],
-                                    statistical_outlier_reduction=[10, 3]
+                                    voxel_reduction=[5, 5, 5]
                                     )
 
     residual, registration = reg_points_to_vid.register(point_cloud,

@@ -4,8 +4,10 @@
 
 import numpy as np
 import cv2
+import sksurgerypclpython as pclp
 import sksurgeryopencvpython as cvcpp
 import sksurgerycore.algorithms.procrustes as proc
+import sksurgerysurfacematch.utils.registration_utils as ru
 import sksurgerysurfacematch.interfaces.video_segmentor as vs
 import sksurgerysurfacematch.algorithms.reconstructor_with_rectified_images \
     as sr
@@ -13,7 +15,8 @@ import sksurgerysurfacematch.interfaces.rigid_registration as rr
 
 
 # pylint:disable=too-many-instance-attributes, invalid-name, too-many-locals
-# pylint:disable=unsubscriptable-object
+# pylint:disable=unsubscriptable-object, too-many-arguments,too-many-branches
+
 
 class Register3DToMosaicedStereoVideo:
     """
@@ -25,30 +28,51 @@ class Register3DToMosaicedStereoVideo:
             video_segmentor: vs.VideoSegmentor,
             surface_reconstructor: sr.StereoReconstructorWithRectifiedImages,
             rigid_registration: rr.RigidRegistration,
+            left_camera_matrix: np.ndarray,
+            left_dist_coeffs: np.ndarray,
+            right_camera_matrix: np.ndarray,
+            right_dist_coeffs: np.ndarray,
+            left_to_right_rmat: np.ndarray,
+            left_to_right_tvec: np.ndarray,
             min_number_of_keypoints: int = 25,
             left_mask: np.ndarray = None,
-            voxel_reduction: list = None,
-            statistical_outlier_reduction: list = None):
+            z_range: list = None,
+            radius_removal: list = None,
+            voxel_reduction: list = None):
         """
-        Uses Dependency Injection for each main component.
+        Uses Dependency Injection for each pluggable component.
 
         :param video_segmentor: Optional class to pre-segment the video.
         :param surface_reconstructor: Mandatory class to do reconstruction.
         :param rigid_registration: Mandatory class to perform rigid alignment.
+        :param left_camera_matrix: [3x3] camera matrix.
+        :param left_dist_coeffs: [1x5] distortion coeff's.
+        :param right_camera_matrix: [3x3] camera matrix.
+        :param right_dist_coeffs: [1x5] distortion coeff's.
+        :param left_to_right_rmat: [3x3] left-to-right rotation matrix.
+        :param left_to_right_tvec: [1x3] left-to-right translation vector.
         :param min_number_of_keypoints: Number of keypoints to use for matching.
         :param left_mask: a static mask to apply to stereo reconstruction.
+        :param z_range: [min range, max range] to limit reconstructed points.
+        :param radius_removal: [radius, number] to reject points with too few
+        neighbours
         :param voxel_reduction: [vx, vy, vz] parameters for PCL
         Voxel Grid reduction.
-        :param statistical_outlier_reduction: [meanK, StdDev] parameters for
-        PCL Statistical Outlier Removal filter.
         """
         self.video_segmentor = video_segmentor
         self.surface_reconstructor = surface_reconstructor
         self.rigid_registration = rigid_registration
+        self.left_camera_matrix = left_camera_matrix
+        self.left_dist_coeffs = left_dist_coeffs
+        self.right_camera_matrix = right_camera_matrix
+        self.right_dist_coeffs = right_dist_coeffs
+        self.left_to_right_rmat = left_to_right_rmat
+        self.left_to_right_tvec = left_to_right_tvec
         self.min_number_of_keypoints = min_number_of_keypoints
         self.left_static_mask = left_mask
+        self.z_range = z_range
+        self.radius_removal = radius_removal
         self.voxel_reduction = voxel_reduction
-        self.statistical_outlier_reduction = statistical_outlier_reduction
         self.previous_keypoints = None
         self.previous_descriptors = None
         self.previous_good_l2r_matches = None
@@ -70,25 +94,13 @@ class Register3DToMosaicedStereoVideo:
 
     def grab(self,
              left_image: np.ndarray,
-             left_camera_matrix: np.ndarray,
-             left_dist_coeffs: np.ndarray,
-             right_image: np.ndarray,
-             right_camera_matrix: np.ndarray,
-             right_dist_coeffs: np.ndarray,
-             left_to_right_rmat: np.ndarray,
-             left_to_right_tvec: np.ndarray):
+             right_image: np.ndarray):
         """
-        To do, explain.
+        Call this repeatedly to grab a surface and use ORM key points to
+        match previous reconstruction to the current frame.
 
-        :param left_image:
-        :param left_camera_matrix:
-        :param left_dist_coeffs:
-        :param right_image:
-        :param right_camera_matrix:
-        :param right_dist_coeffs:
-        :param left_to_right_rmat:
-        :param left_to_right_tvec:
-        :return:
+        :param left_image: undistorted, BGR image
+        :param right_image: undistorted, BGR image
         """
         left_mask = np.ones((left_image.shape[0],
                              left_image.shape[1])) * 255
@@ -142,23 +154,38 @@ class Register3DToMosaicedStereoVideo:
             paired_pts[:, 2:4] = right_pts
             triangulated_l2r_key_points = \
                 cvcpp.triangulate_points_using_hartley(paired_pts,
-                                                       left_camera_matrix,
-                                                       right_camera_matrix,
-                                                       left_to_right_rmat,
-                                                       left_to_right_tvec)
+                                                       self.left_camera_matrix,
+                                                       self.right_camera_matrix,
+                                                       self.left_to_right_rmat,
+                                                       self.left_to_right_tvec)
 
             full_reconstruction = \
                 self.surface_reconstructor.reconstruct(left_image,
-                                                       left_camera_matrix,
-                                                       left_dist_coeffs,
+                                                       self.left_camera_matrix,
+                                                       self.left_dist_coeffs,
                                                        right_image,
-                                                       right_camera_matrix,
-                                                       right_dist_coeffs,
-                                                       left_to_right_rmat,
-                                                       left_to_right_tvec,
+                                                       self.right_camera_matrix,
+                                                       self.right_dist_coeffs,
+                                                       self.left_to_right_rmat,
+                                                       self.left_to_right_tvec,
                                                        left_mask
                                                        )
+
             full_reconstruction = full_reconstruction[:, 0:3]
+
+            if self.z_range is not None:
+                full_reconstruction = \
+                    pclp.pass_through_filter(full_reconstruction,
+                                             'z',
+                                             self.z_range[0],
+                                             self.z_range[1],
+                                             True)
+
+            if self.radius_removal is not None:
+                full_reconstruction = \
+                    pclp.radius_removal_filter(full_reconstruction,
+                                               self.radius_removal[0],
+                                               self.radius_removal[1])
 
             # Match to previous frame
             if self.previous_keypoints is not None and \
@@ -212,3 +239,32 @@ class Register3DToMosaicedStereoVideo:
             self.previous_good_l2r_matched_descriptors = left_descriptors
             self.previous_triangulated_key_points = triangulated_l2r_key_points
             self.previous_recon = full_reconstruction
+
+    def register(self,
+                 point_cloud: np.ndarray,
+                 initial_transform: np.ndarray = None
+                 ):
+        """
+        Registers a point cloud to the internal mosaicc'ed reconstruction.
+
+        :param point_cloud: [Nx3] points, each row, x,y,z, e.g. from CT/MR.
+        :param initial_transform: [4x4] of initial rigid transform.
+        :return: residual, [4x4] matrix, of point_cloud to left camera space.
+        """
+        if self.previous_recon is None:
+            raise ValueError("No reconstruction has been performed")
+
+        recon_points = self.previous_recon
+
+        if self.voxel_reduction is not None:
+            recon_points = \
+                pclp.down_sample_points(
+                    recon_points,
+                    self.voxel_reduction[0],
+                    self.voxel_reduction[1],
+                    self.voxel_reduction[2])
+
+        return ru.do_rigid_registration(recon_points,
+                                        point_cloud,
+                                        self.rigid_registration,
+                                        initial_transform)

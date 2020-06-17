@@ -29,24 +29,18 @@ def test_point_cloud_mosaiicing():
     video_mosaiicer = sm.Register3DToMosaicedStereoVideo(None,
                                                          sr.SGBMReconstructor(),
                                                          None,
+                                                         left_intrinsics,
+                                                         left_distortion,
+                                                         right_intrinsics,
+                                                         right_distortion,
+                                                         l2r_rmat,
+                                                         l2r_tvec,
                                                          left_mask=left_mask_t0)
 
     video_mosaiicer.grab(left_undistorted_t0,
-                         left_intrinsics,
-                         left_distortion,
-                         right_undistorted_t0,
-                         right_intrinsics,
-                         right_distortion,
-                         l2r_rmat,
-                         l2r_tvec)
+                         right_undistorted_t0)
 
     video_mosaiicer.grab(left_undistorted_t0,
-                         left_intrinsics,
-                         left_distortion,
-                         right_undistorted_t0,
-                         right_intrinsics,
-                         right_distortion,
-                         l2r_rmat,
-                         l2r_tvec)
+                         right_undistorted_t0)
 
     assert True
