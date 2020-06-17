@@ -36,7 +36,8 @@ Features
 * A base class to handle rectification properly, and the right coordinate transformation, to save you the trouble.
 * Stereo reconstruction classes based on Stoyanov MICCAI 2010, and OpenCV SGBM reconstruction, using above interface, and both allowing for optional masking.
 * Rigid registration using PCL's ICP implementation, which is wrapped in scikit-surgerypclcpp
-* A pipeline to combine the above, segment a video pair, do reconstruction, and register to a 3D model, where each part can then be swapped with different implementations of the above.
+* A pipeline to combine the above, segment a video pair, do reconstruction, and register to a 3D model, where each part can then be swapped with whatever implementation you want, as long as you implement the right interface.
+* A pipeline to take multiple stereo video snapshots, do surface reconstruction, mosaic them together, and then register to a 3D model. Again, each main component (video segmentation, surface reconstruction, rigid registration) is swappable. Inspired by: [Xiaohui Zhang's](https://doi.org/10.1007/s11548-019-01974-6) method.
 
 
 Developing
