@@ -41,7 +41,10 @@ def test_point_cloud_mosaiicing():
                                                          right_distortion,
                                                          l2r_rmat,
                                                          l2r_tvec,
-                                                         left_mask=left_mask_t0)
+                                                         left_mask=left_mask_t0,
+                                                         z_range=[45, 65],
+                                                         voxel_reduction=[5, 5, 5]
+                                                         )
 
     # At the moment, testing with two identical frames.
     video_mosaiicer.grab(left_undistorted_t0,

@@ -37,7 +37,6 @@ class RigidRegistration(rr.RigidRegistration):
 
         transform = np.eye(4)
 
-        # pylint:disable=
         residual = pclp.icp(source_cloud,
                             target_cloud,
                             max_iterations,
