@@ -35,6 +35,7 @@ class Register3DToMosaicedStereoVideo:
             left_to_right_rmat: np.ndarray,
             left_to_right_tvec: np.ndarray,
             min_number_of_keypoints: int = 25,
+            max_fre_threshold=2,
             left_mask: np.ndarray = None,
             z_range: list = None,
             radius_removal: list = None,
@@ -52,6 +53,7 @@ class Register3DToMosaicedStereoVideo:
         :param left_to_right_rmat: [3x3] left-to-right rotation matrix.
         :param left_to_right_tvec: [1x3] left-to-right translation vector.
         :param min_number_of_keypoints: Number of keypoints to use for matching.
+        :param max_fre_threshold: maximum FRE when stitching frames together.
         :param left_mask: a static mask to apply to stereo reconstruction.
         :param z_range: [min range, max range] to limit reconstructed points.
         :param radius_removal: [radius, number] to reject points with too few
@@ -69,6 +71,7 @@ class Register3DToMosaicedStereoVideo:
         self.left_to_right_rmat = left_to_right_rmat
         self.left_to_right_tvec = left_to_right_tvec
         self.min_number_of_keypoints = min_number_of_keypoints
+        self.max_fre_threshold = max_fre_threshold
         self.left_static_mask = left_mask
         self.z_range = z_range
         self.radius_removal = radius_removal
@@ -218,7 +221,7 @@ class Register3DToMosaicedStereoVideo:
                     rmat, tvec, fre = proc.orthogonal_procrustes(current_3d_pts,
                                                                  prev_3d_pts)
 
-                    if fre < 1:
+                    if fre < self.max_fre_threshold:
                         # Transform previous point cloud to current
                         transformed_point_cloud = \
                             np.transpose(np.matmul(rmat,
@@ -226,7 +229,7 @@ class Register3DToMosaicedStereoVideo:
                                                        self.previous_recon))
                                          + tvec)
 
-                        # Combine and simplify?
+                        # Combine and simplify? or just combine?
                         full_reconstruction = \
                             np.vstack((transformed_point_cloud,
                                        full_reconstruction))

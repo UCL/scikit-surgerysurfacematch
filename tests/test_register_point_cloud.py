@@ -23,14 +23,14 @@ def test_point_cloud_registration():
     pointcloud_file = 'tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_CT_cut.xyz'
     point_cloud = np.loadtxt(pointcloud_file)
 
+    model_to_camera = np.eye(4)
+
     left_image = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_IMG_left.bmp')
     left_undistorted = cv2.undistort(left_image, left_intrinsics, left_distortion)
     left_mask = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_MASK_eval_inverted.png')
     left_mask = cv2.cvtColor(left_mask, cv2.COLOR_BGR2GRAY)
     right_image = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_IMG_right.bmp')
     right_undistorted = cv2.undistort(right_image, right_intrinsics, right_distortion)
-
-    model_to_camera = np.eye(4)
 
     # Produce picture of gold standard registration.
     pu.reproject_and_save(left_undistorted, model_to_camera, point_cloud, left_intrinsics,
@@ -62,7 +62,7 @@ def test_point_cloud_registration():
     print(f'{len(point_cloud)} points in reference point cloud')
 
     print("Residual:" + str(residual))
-    print("Registration, full point cloud:\n" + str(registration))
+    print("Registration, using single-view, with full point cloud:\n" + str(registration))
 
     pu.reproject_and_save(left_undistorted, registration, point_cloud, left_intrinsics,
                           output_file='tests/output/open_cas_tmi_registered.png')
