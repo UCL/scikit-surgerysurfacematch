@@ -18,6 +18,12 @@ class Register3DToStereoVideo:
                  video_segmentor: vs.VideoSegmentor,
                  surface_reconstructor: sr.StereoReconstructor,
                  rigid_registration: rr.RigidRegistration,
+                 left_camera_matrix: np.ndarray,
+                 left_dist_coeffs: np.ndarray,
+                 right_camera_matrix: np.ndarray,
+                 right_dist_coeffs: np.ndarray,
+                 left_to_right_rmat: np.ndarray,
+                 left_to_right_tvec: np.ndarray,
                  left_mask: np.ndarray = None,
                  z_range: list = None,
                  voxel_reduction: list = None,
@@ -29,6 +35,12 @@ class Register3DToStereoVideo:
         :param video_segmentor: Optional class to pre-segment the video.
         :param surface_reconstructor: Mandatory class to do reconstruction.
         :param rigid_registration: Mandatory class to perform rigid alignment.
+        :param left_camera_matrix: [3x3] camera matrix.
+        :param left_dist_coeffs: [1x5] distortion coeff's.
+        :param right_camera_matrix: [3x3] camera matrix.
+        :param right_dist_coeffs: [1x5] distortion coeff's.
+        :param left_to_right_rmat: [3x3] left-to-right rotation matrix.
+        :param left_to_right_tvec: [1x3] left-to-right translation vector.
         :param left_mask: a static mask to apply to stereo reconstruction.
         :param z_range: [min range, max range] to limit reconstructed points
         :param voxel_reduction: [vx, vy, vz] parameters for PCL
@@ -39,6 +51,12 @@ class Register3DToStereoVideo:
         self.video_segmentor = video_segmentor
         self.surface_reconstructor = surface_reconstructor
         self.rigid_registration = rigid_registration
+        self.left_camera_matrix = left_camera_matrix
+        self.left_dist_coeffs = left_dist_coeffs
+        self.right_camera_matrix = right_camera_matrix
+        self.right_dist_coeffs = right_dist_coeffs
+        self.left_to_right_rmat = left_to_right_rmat
+        self.left_to_right_tvec = left_to_right_tvec
         self.left_static_mask = left_mask
         self.z_range = z_range
         self.voxel_reduction = voxel_reduction
@@ -48,13 +66,7 @@ class Register3DToStereoVideo:
     def register(self,
                  point_cloud: np.ndarray,
                  left_image: np.ndarray,
-                 left_camera_matrix: np.ndarray,
-                 left_dist_coeffs: np.ndarray,
                  right_image: np.ndarray,
-                 right_camera_matrix: np.ndarray,
-                 right_dist_coeffs: np.ndarray,
-                 left_to_right_rmat: np.ndarray,
-                 left_to_right_tvec: np.ndarray,
                  initial_transform: np.ndarray = None
                  ):
         """
@@ -64,13 +76,7 @@ class Register3DToStereoVideo:
 
         :param point_cloud: [Nx3] points, each row, x,y,z, e.g. from CT/MR.
         :param left_image: undistorted, BGR image
-        :param left_camera_matrix: [3x3] camera matrix.
-        :param left_dist_coeffs: [1x5] distortion coeff's.
         :param right_image: undistorted, BGR image
-        :param right_camera_matrix: [3x3] camera matrix.
-        :param right_dist_coeffs: [1x5] distortion coeff's.
-        :param left_to_right_rmat: [3x3] left-to-right rotation matrix.
-        :param left_to_right_tvec: [1x3] left-to-right translation vector.
         :param initial_transform: [4x4] of initial rigid transform.
         :return: residual, [4x4] matrix, of point_cloud to left camera space.
         """
@@ -93,13 +99,13 @@ class Register3DToStereoVideo:
 
         reconstruction = \
             self.surface_reconstructor.reconstruct(left_image,
-                                                   left_camera_matrix,
-                                                   left_dist_coeffs,
+                                                   self.left_camera_matrix,
+                                                   self.left_dist_coeffs,
                                                    right_image,
-                                                   right_camera_matrix,
-                                                   right_dist_coeffs,
-                                                   left_to_right_rmat,
-                                                   left_to_right_tvec,
+                                                   self.right_camera_matrix,
+                                                   self.right_dist_coeffs,
+                                                   self.left_to_right_rmat,
+                                                   self.left_to_right_tvec,
                                                    left_mask
                                                    )
 

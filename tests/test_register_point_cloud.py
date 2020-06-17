@@ -41,6 +41,12 @@ def test_point_cloud_registration():
         reg.Register3DToStereoVideo(None,
                                     sr.SGBMReconstructor(),
                                     pir.RigidRegistration(),
+                                    left_intrinsics,
+                                    left_distortion,
+                                    right_intrinsics,
+                                    right_distortion,
+                                    l2r_rmat,
+                                    l2r_tvec,
                                     left_mask=left_mask,
                                     z_range=[45, 65],
                                     voxel_reduction=[5, 5, 5],
@@ -49,13 +55,7 @@ def test_point_cloud_registration():
 
     residual, registration = reg_points_to_vid.register(point_cloud,
                                                         left_undistorted,
-                                                        left_intrinsics,
-                                                        left_distortion,
                                                         right_undistorted,
-                                                        right_intrinsics,
-                                                        right_distortion,
-                                                        l2r_rmat,
-                                                        l2r_tvec,
                                                         model_to_camera
                                                         )
 
