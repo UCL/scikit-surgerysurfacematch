@@ -19,7 +19,7 @@ setup(
     long_description_content_type='text/x-rst',
     url='https://github.com/UCL/scikit-surgerysurfacematch',
     author='Matt Clarkson',
-    author_email='YOUR-EMAIL@ucl.ac.uk',
+    author_email='m.clarkson@ucl.ac.uk',
     license='BSD-3 license',
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -51,8 +51,13 @@ setup(
     ),
 
     install_requires=[
-        'six>=1.10',
         'numpy>=1.11',
+        'ipykernel',
+        'nbsphinx',
+        'scikit-surgeryimage',
+        'scikit-surgerycalibration',
+        'scikit-surgeryopencvcpp',
+        'scikit-surgerypclcpp>=0.3.0'
     ],
 
     entry_points={
