@@ -20,20 +20,19 @@ def do_rigid_registration(reconstructed_cloud,
     :param initial_transform: [4x4] ndarray representing an initial estimate.
     :return: residual (float), [4x4] transform
     """
-    point_cloud = reconstructed_cloud
 
     if initial_transform is not None:
-        point_cloud = \
+        reconstructed_cloud = \
             np.matmul(
                 initial_transform[0:3, 0:3], np.transpose(reference_cloud)) \
             + initial_transform[0:3, 3].reshape((3, 1))
-        point_cloud = np.transpose(point_cloud)
+        reconstructed_cloud = np.transpose(reconstructed_cloud)
 
     # Do registration. Best to register recon points to
     # the provided model (likely from CT or MR), and then invert.
     residual, transform = \
         rigid_registration.register(reconstructed_cloud,
-                                    point_cloud
+                                    reference_cloud
                                     )
     transform = np.linalg.inv(transform)
 
