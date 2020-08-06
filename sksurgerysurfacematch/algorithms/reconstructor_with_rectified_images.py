@@ -93,13 +93,18 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         right_rectified = cv2.remap(right_image, undistort_rectify_map_r_x,
                                     undistort_rectify_map_r_y, cv2.INTER_LINEAR)
 
+        left_mask_rectified = cv2.remap(left_mask, undistort_rectify_map_l_x,
+                                   undistort_rectify_map_l_y, cv2.INTER_LINEAR)
+
         self.disparity = self._compute_disparity(left_rectified,
                                                  right_rectified)
+
+        print(f'Disparity: {self.disparity.shape}')
         self.points = cv2.reprojectImageTo3D(self.disparity, q_mat)
         self.rgb_image = cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB)
 
         # Calls method below to extract data.
-        return self.extract(left_mask)
+        return self.extract(left_mask_rectified)
 
     def extract(self, left_mask: np.ndarray):
         """
