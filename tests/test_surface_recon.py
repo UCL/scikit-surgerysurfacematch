@@ -101,7 +101,7 @@ def test_stoyanov_and_sgbm():
     print("SGBM, cloud=" + str(points.shape))
 
     assert points.shape[1] == 6
-    assert points.shape[0] == 65565
+    assert points.shape[0] == 65502
 
     points = reconstructor.reconstruct(left_undistorted,
                                        left_intrinsics,
@@ -116,6 +116,6 @@ def test_stoyanov_and_sgbm():
     pl.write_pointcloud(points[:, 0:3], points[:, 3:6], 'tests/output/sgbm_masked.ply')
 
     assert points.shape[1] == 6
-    assert points.shape[0] == 6628
+    assert points.shape[0] == 7422
 
     print("SGBM masked, cloud=" + str(points.shape))

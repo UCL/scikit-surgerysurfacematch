@@ -27,8 +27,7 @@ def test_point_cloud_mosaiicing():
 
     left_image_t0 = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_IMG_left.bmp')
     left_undistorted_t0 = cv2.undistort(left_image_t0, left_intrinsics, left_distortion)
-    left_mask_t0 = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_MASK_eval_inverted.png')
-    left_mask_t0 = cv2.cvtColor(left_mask_t0, cv2.COLOR_BGR2GRAY)
+    left_mask_t0 = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_MASK_eval_inverted.png', 0)
     right_image_t0 = cv2.imread('tests/data/open_cas_tmi/Stereo_SD_d_complete_22/Stereo_SD_d_complete_22_IMG_right.bmp')
     right_undistorted_t0 = cv2.undistort(right_image_t0, right_intrinsics, right_distortion)
 

@@ -41,12 +41,15 @@ def test_triangulation():
                                                       )
 
     calibrator = \
-        sc.StereoVideoCalibrationDriver(chessboard_detector, 140)
+        sc.StereoVideoCalibrationDriver(chessboard_detector,
+                                        chessboard_detector,
+                                        140)
 
     # Repeatedly grab data, until you have enough.
     for i, _ in enumerate(left_images):
-        successful = calibrator.grab_data(left_images[i], right_images[i])
-        assert successful > 0
+        success_l, success_r =  \
+            calibrator.grab_data(left_images[i], right_images[i])
+        assert success_l > 0
 
     # Then do calibration
     reproj_err, recon_err, params = calibrator.calibrate()

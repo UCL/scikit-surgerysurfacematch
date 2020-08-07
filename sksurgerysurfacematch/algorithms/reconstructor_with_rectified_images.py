@@ -93,8 +93,15 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         right_rectified = cv2.remap(right_image, undistort_rectify_map_r_x,
                                     undistort_rectify_map_r_y, cv2.INTER_LINEAR)
 
-        left_mask_rectified = cv2.remap(left_mask, undistort_rectify_map_l_x,
-                                   undistort_rectify_map_l_y, cv2.INTER_LINEAR)
+        # Need to remap the mask if we have one
+        if left_mask is not None:
+
+            # Can't remap a boolean array, so have to convert to uint8
+            if left_mask.dtype == bool:
+                left_mask = np.uint8(left_mask)
+
+            left_mask = cv2.remap(left_mask, undistort_rectify_map_l_x,
+                                  undistort_rectify_map_l_y, cv2.INTER_LINEAR)
 
         self.disparity = self._compute_disparity(left_rectified,
                                                  right_rectified)
@@ -104,7 +111,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         self.rgb_image = cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB)
 
         # Calls method below to extract data.
-        return self.extract(left_mask_rectified)
+        return self.extract(left_mask)
 
     def extract(self, left_mask: np.ndarray):
         """
