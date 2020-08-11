@@ -8,4 +8,5 @@ nbsphinx
 scikit-surgeryimage
 scikit-surgerycalibration
 scikit-surgeryopencvcpp
+scikit-surgerygoicp
 scikit-surgerypclcpp>=0.3.0

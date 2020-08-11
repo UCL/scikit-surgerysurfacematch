@@ -57,7 +57,8 @@ setup(
         'scikit-surgeryimage',
         'scikit-surgerycalibration',
         'scikit-surgeryopencvcpp',
-        'scikit-surgerypclcpp>=0.3.0'
+        'scikit-surgerypclcpp>=0.3.0',
+        'scikit-surgerygoicp'
     ],
 
     entry_points={
