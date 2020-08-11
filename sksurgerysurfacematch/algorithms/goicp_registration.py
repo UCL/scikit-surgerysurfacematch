@@ -16,6 +16,28 @@ def numpy_to_POINT3D_array(numpy_pointcloud):
         p3dlist.append(pt)
     return numpy_pointcloud.shape[0], p3dlist
 
+def demean_and_normalise(points_a: np.ndarray,
+                         points_b: np.ndarray):
+    """Independently centre each point cloud around 0,0,0, then normlise
+    both to [-1,1].
+
+    :param fixed_cloud: [description]
+    :type fixed_cloud: np.ndarray
+    :param moving_cloud: [description]
+    :type moving_cloud: np.ndarray
+    :return: [description]
+    :rtype: [type]
+    """
+    a_demean = points_a - np.mean(points_a, axis=0)
+    b_demean = points_b - np.mean(points_b, axis=0)
+    
+    norm_factor = np.max(np.max(a_demean), np.max(b_demean))
+
+    a_normalised = a_demean / norm_factor
+    b_normalised = a_demean / norm_factor
+
+    return a_normalised, b_normalised
+
 class GoICPRegistration(rr.RigidRegistration):
     """
     Class that uses GoICP implementation to register fixed/moving clouds.
@@ -40,6 +62,9 @@ class GoICPRegistration(rr.RigidRegistration):
         :param moving_cloud: [Mx3] moving point cloud.
         :return: [4x4] transformation matrix, moving-to-fixed space.
         """
+
+        fixed_cloud, moving_cloud = \
+            demean_and_normalise(fixed_cloud, moving_cloud)
 
         Nm, a_points = numpy_to_POINT3D_array(moving_cloud)
         Nd, b_points = numpy_to_POINT3D_array(fixed_cloud)
