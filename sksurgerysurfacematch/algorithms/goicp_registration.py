@@ -30,19 +30,20 @@ def demean_and_normalise(points_a: np.ndarray,
     """
     a_demean = points_a - np.mean(points_a, axis=0)
     b_demean = points_b - np.mean(points_b, axis=0)
-    
-    norm_factor = np.max(np.max(a_demean), np.max(b_demean))
+
+    norm_factor = np.max([np.max(np.abs(a_demean)),
+                          np.max(np.abs(b_demean))])
 
     a_normalised = a_demean / norm_factor
-    b_normalised = a_demean / norm_factor
+    b_normalised = b_demean / norm_factor
 
     return a_normalised, b_normalised
 
-class GoICPRegistration(rr.RigidRegistration):
+class RigidRegistration(rr.RigidRegistration):
     """
     Class that uses GoICP implementation to register fixed/moving clouds.
     At the moment, we are just relying on all default parameters.
-    :param dt_size: GoICP distance transform size
+    :param dt_size: Nodes per dimension of distance transform
     :param dt_factor: GoICP distance transform factor
     """
 
@@ -54,17 +55,20 @@ class GoICPRegistration(rr.RigidRegistration):
     def register(self,
                  fixed_cloud: np.ndarray,
                  moving_cloud: np.ndarray,
+                 normalise=True
                  ):
         """
         Uses GoICP library, wrapped in scikit-surgerygoicp.
 
         :param fixed_cloud: [Nx3] fixed point cloud.
         :param moving_cloud: [Mx3] moving point cloud.
+        :normalise: If true, data will be centred around 0 and normalsied.
         :return: [4x4] transformation matrix, moving-to-fixed space.
         """
 
-        fixed_cloud, moving_cloud = \
-            demean_and_normalise(fixed_cloud, moving_cloud)
+        if normalise:
+            fixed_cloud, moving_cloud = \
+                demean_and_normalise(fixed_cloud, moving_cloud)
 
         Nm, a_points = numpy_to_POINT3D_array(moving_cloud)
         Nd, b_points = numpy_to_POINT3D_array(fixed_cloud)
