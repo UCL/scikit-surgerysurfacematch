@@ -6,6 +6,7 @@ import numpy as np
 import sksurgerysurfacematch.utils.projection_utils as pu
 import sksurgerysurfacematch.algorithms.sgbm_reconstructor as sr
 import sksurgerysurfacematch.algorithms.pcl_icp_registration as pir
+import sksurgerysurfacematch.algorithms.goicp_registration as goicp
 import sksurgerysurfacematch.pipelines.register_cloud_to_stereo_reconstruction as reg
 
 
@@ -68,4 +69,3 @@ def test_point_cloud_registration():
                           output_file='tests/output/open_cas_tmi_registered.png')
 
     assert residual < 5.0
-
