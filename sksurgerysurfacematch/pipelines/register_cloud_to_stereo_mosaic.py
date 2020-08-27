@@ -2,6 +2,7 @@
 
 """ Pipeline to register 3D point cloud to mosaic'ed surface reconstruction. """
 
+import copy
 import numpy as np
 import cv2
 import sksurgerypclpython as pclp
@@ -252,7 +253,8 @@ class Register3DToMosaicedStereoVideo:
 
         :param point_cloud: [Nx3] points, each row, x,y,z, e.g. from CT/MR.
         :param initial_transform: [4x4] of initial rigid transform.
-        :return: residual, [4x4] matrix, of point_cloud to left camera space.
+        :return: residual, [4x4] transform, of point_cloud to left camera space,
+        and [Mx6] reconstructed point cloud, as [x, y, z, r, g, b] rows.
         """
         if self.previous_recon is None:
             raise ValueError("No reconstruction has been performed")
@@ -267,7 +269,10 @@ class Register3DToMosaicedStereoVideo:
                     self.voxel_reduction[1],
                     self.voxel_reduction[2])
 
-        return ru.do_rigid_registration(recon_points,
-                                        point_cloud,
-                                        self.rigid_registration,
-                                        initial_transform)
+        residual, transform = ru.do_rigid_registration(recon_points,
+                                                       point_cloud,
+                                                       self.rigid_registration,
+                                                       initial_transform)
+
+        # Don't return a pointer to internal self.previous_recon.
+        return residual, transform, copy.deepcopy(recon_points)

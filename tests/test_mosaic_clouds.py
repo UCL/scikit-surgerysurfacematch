@@ -52,8 +52,8 @@ def test_point_cloud_mosaiicing():
     video_mosaiicer.grab(left_undistorted_t0,
                          right_undistorted_t0)
 
-    residual, registration = video_mosaiicer.register(point_cloud,
-                                                      model_to_camera)
+    residual, registration, points = video_mosaiicer.register(point_cloud,
+                                                              model_to_camera)
 
     print(f'Model: {pointcloud_file}')
     print(f'{len(point_cloud)} points in reference point cloud')
