@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
 
-model_data = np.loadtxt('tests/data/icp/model_rand.txt')
-target_data = np.loadtxt('tests/data/icp/data_rand.txt')
+model_data = np.loadtxt('tests/data/icp/model_bunny.txt')
+target_data = np.loadtxt('tests/data/icp/data_bunny.txt')
 
 import sksurgerysurfacematch.algorithms.pcl_icp_registration as pir
 import sksurgerysurfacematch.algorithms.goicp_registration as goicp
@@ -10,13 +10,15 @@ import sksurgerysurfacematch.algorithms.goicp_registration as goicp
 def test_icp_reg():
     icp_reg = pir.RigidRegistration()
     residual, transform = icp_reg.register(model_data, target_data)
+    print(residual, transform)
 
     assert residual < 0.1
 
 
 def test_goicp_reg():
-    goicp_reg = goicp.RigidRegistration()
-    residual, transform = goicp_reg.register(model_data, target_data)
+    goicp_reg = goicp.RigidRegistration(dt_size=100, dt_factor=1)
+    goicp.MSEThresh = 0.001
+    residual, transform = goicp_reg.register(model_data, target_data, False)
 
     print(residual, transform)
     assert residual < 0.1
