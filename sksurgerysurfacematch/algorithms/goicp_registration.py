@@ -19,30 +19,6 @@ def numpy_to_POINT3D_array(numpy_pointcloud):
     return numpy_pointcloud.shape[0], p3dlist
 
 
-def demean_and_normalise(points_a: np.ndarray,
-                         points_b: np.ndarray):
-    """
-    Independently centre each point cloud around 0,0,0, then normalise
-    both to [-1,1].
-
-    :param points_a: [description]
-    :type points_a: np.ndarray
-    :param points_b: [description]
-    :type points_b: np.ndarray
-    :return: [description]
-    :rtype: [type]
-    """
-    a_demean = points_a - np.mean(points_a, axis=0)
-    b_demean = points_b - np.mean(points_b, axis=0)
-
-    norm_factor = np.max([np.max(np.abs(a_demean)),
-                          np.max(np.abs(b_demean))])
-
-    a_normalised = a_demean / norm_factor
-    b_normalised = b_demean / norm_factor
-
-    return a_normalised, b_normalised
-
 
 class RigidRegistration(rr.RigidRegistration):
     """
@@ -57,6 +33,56 @@ class RigidRegistration(rr.RigidRegistration):
         self.goicp = GoICP()
         self.goicp.setDTSizeAndFactor(dt_size, dt_factor)
 
+        self.norm_factor = None
+        self.fixed_points_translation = None
+        self.moving_points_translation = None
+
+    def demean_and_normalise(self, points_a, points_b):
+        """
+        Independently centre each point cloud around 0,0,0, then normalise
+        both to [-1,1].
+
+        :param points_a: First point cloud
+        :type points_a: np.ndarray
+        :param points_b: Second point cloud
+        :type points_b: np.ndarray
+        :return: Centred and normalised point clouds
+        :rtype: np.ndarray, np.ndarray
+        """
+
+        self.a_translation = np.mean(points_a, axis=0)
+        self.b_translation = np.mean(points_b, axis=0)
+
+        a_demean = points_a - self.a_translation
+        b_demean = points_b - self.b_translation
+
+        self.norm_factor = np.max([np.max(np.abs(a_demean)),
+                            np.max(np.abs(b_demean))])
+
+        a_normalised = a_demean / self.norm_factor
+        b_normalised = b_demean / self.norm_factor
+
+        return a_normalised, b_normalised
+
+    def undo_demean_and_normalise(self, 
+                                  normalised_points_a,
+                                  normalised_points_b):
+        
+        points_a = normalised_points_a * self.norm_factor + self.a_translation
+        points_b = normalised_points_b * self.norm_factor + self.b_translation
+
+        return points_a, points_b
+
+    def unnormalise_transform(self, rigid_transformation):
+
+        s = np.eye(4)
+        s[0,0] = self.norm_factor[0]
+        s[1,1] = self.norm_factor[1]
+        s[2,2] = self.norm_factor[2]
+
+        tf = np.linalg.inv(self.fixed_points_translation) @ np.linalg.inv(s) @ rigid_transformation @ s @ self.moving_points_translation
+
+        return tf
     def register(self,
                  fixed_cloud: np.ndarray,
                  moving_cloud: np.ndarray,
@@ -73,7 +99,7 @@ class RigidRegistration(rr.RigidRegistration):
 
         if normalise:
             fixed_cloud, moving_cloud = \
-                demean_and_normalise(fixed_cloud, moving_cloud)
+                self.demean_and_normalise(fixed_cloud, moving_cloud)
 
         Nm, a_points = numpy_to_POINT3D_array(moving_cloud)
         Nd, b_points = numpy_to_POINT3D_array(fixed_cloud)
@@ -93,5 +119,8 @@ class RigidRegistration(rr.RigidRegistration):
         rigid_transformation[0][3] = opt_trans[0]
         rigid_transformation[1][3] = opt_trans[1]
         rigid_transformation[2][3] = opt_trans[2]
+
+        if normalise:
+            rigid_transformation = self.unnormalise_transform(rigid_transformation)
 
         return residual, rigid_transformation
