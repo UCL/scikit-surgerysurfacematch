@@ -25,6 +25,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         you can call extract multiple times with different masks
         to pull out different subsets of data.
         """
+        super().__init__()
         self.disparity = None
         self.points = None
         self.rgb_image = None

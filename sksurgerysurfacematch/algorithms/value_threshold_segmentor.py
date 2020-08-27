@@ -15,7 +15,7 @@ class ValueThresholdSegmentor(vs.VideoSegmentor):
     It's not really useful for anything other than testing the interface.
     """
     def __init__(self, threshold=127):
-        super(ValueThresholdSegmentor, self).__init__()
+        super().__init__()
         self.threshold = threshold
 
     def segment(self, image: np.ndarray):
