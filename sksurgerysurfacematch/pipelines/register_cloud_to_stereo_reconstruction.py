@@ -79,7 +79,8 @@ class Register3DToStereoVideo:
         :param left_image: undistorted, BGR image
         :param right_image: undistorted, BGR image
         :param initial_transform: [4x4] of initial rigid transform.
-        :return: residual, [4x4] matrix, of point_cloud to left camera space.
+        :return: residual, [4x4] transform, of point_cloud to left camera space,
+        and [Mx6] reconstructed point cloud, as [x, y, z, r, g, b] rows.
         """
         left_mask = None
 
@@ -133,7 +134,9 @@ class Register3DToStereoVideo:
                     self.voxel_reduction[1],
                     self.voxel_reduction[2])
 
-        return ru.do_rigid_registration(recon_points,
-                                        point_cloud,
-                                        self.rigid_registration,
-                                        initial_transform)
+        residual, transform = ru.do_rigid_registration(recon_points,
+                                                       point_cloud,
+                                                       self.rigid_registration,
+                                                       initial_transform)
+
+        return residual, transform, reconstruction

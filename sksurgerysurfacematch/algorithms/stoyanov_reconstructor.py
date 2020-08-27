@@ -14,7 +14,7 @@ class StoyanovReconstructor(sr.StereoReconstructor):
     Constructor.
     """
     def __init__(self, use_hartley=False):
-        super(StoyanovReconstructor, self).__init__()
+        super().__init__()
         self.use_hartley = use_hartley
 
     # pylint:disable=too-many-arguments

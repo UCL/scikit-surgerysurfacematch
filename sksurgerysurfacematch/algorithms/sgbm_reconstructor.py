@@ -23,7 +23,7 @@ class SGBMReconstructor(sr.StereoReconstructorWithRectifiedImages):
                  uniqueness_ratio=0,
                  speckle_window_size=0,
                  speckle_range=0):
-        super(SGBMReconstructor, self).__init__()
+        super().__init__()
         self.stereo = cv2.StereoSGBM_create(
             minDisparity=min_disparity,
             numDisparities=num_disparities,
