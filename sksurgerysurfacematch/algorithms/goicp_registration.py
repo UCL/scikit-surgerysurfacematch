@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
-""" PCL ICP implementation of RigidRegistration interface. """
-#pylint:disable=invalid-name, no-name-in-module
+""" Go ICP implementation of RigidRegistration interface. """
+
+# pylint:disable=invalid-name, no-name-in-module
 
 import numpy as np
 from sksurgerygoicppython import  GoICP, POINT3D
 import sksurgerysurfacematch.interfaces.rigid_registration as rr
+
 
 def numpy_to_POINT3D_array(numpy_pointcloud):
     """ Covert numpy array to POINT3D array suitable for GoICP algorithm."""
@@ -16,15 +18,17 @@ def numpy_to_POINT3D_array(numpy_pointcloud):
         p3dlist.append(pt)
     return numpy_pointcloud.shape[0], p3dlist
 
+
 def demean_and_normalise(points_a: np.ndarray,
                          points_b: np.ndarray):
-    """Independently centre each point cloud around 0,0,0, then normlise
+    """
+    Independently centre each point cloud around 0,0,0, then normalise
     both to [-1,1].
 
-    :param fixed_cloud: [description]
-    :type fixed_cloud: np.ndarray
-    :param moving_cloud: [description]
-    :type moving_cloud: np.ndarray
+    :param points_a: [description]
+    :type points_a: np.ndarray
+    :param points_b: [description]
+    :type points_b: np.ndarray
     :return: [description]
     :rtype: [type]
     """
@@ -38,6 +42,7 @@ def demean_and_normalise(points_a: np.ndarray,
     b_normalised = b_demean / norm_factor
 
     return a_normalised, b_normalised
+
 
 class RigidRegistration(rr.RigidRegistration):
     """
@@ -62,7 +67,7 @@ class RigidRegistration(rr.RigidRegistration):
 
         :param fixed_cloud: [Nx3] fixed point cloud.
         :param moving_cloud: [Mx3] moving point cloud.
-        :normalise: If true, data will be centred around 0 and normalsied.
+        :param normalise: If true, data will be centred around 0 and normalised.
         :return: [4x4] transformation matrix, moving-to-fixed space.
         """
 
