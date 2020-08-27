@@ -80,9 +80,10 @@ class RigidRegistration(rr.RigidRegistration):
         s[1,1] = self.norm_factor[1]
         s[2,2] = self.norm_factor[2]
 
-        tf = np.linalg.inv(self.fixed_points_translation) @ np.linalg.inv(s) @ rigid_transformation @ s @ self.moving_points_translation
+        tf = np.linalg.inv(self.a_translation) @ np.linalg.inv(s) @ rigid_transformation @ s @ self.b_translation
 
         return tf
+
     def register(self,
                  fixed_cloud: np.ndarray,
                  moving_cloud: np.ndarray,
@@ -120,7 +121,7 @@ class RigidRegistration(rr.RigidRegistration):
         rigid_transformation[1][3] = opt_trans[1]
         rigid_transformation[2][3] = opt_trans[2]
 
-        if normalise:
-            rigid_transformation = self.unnormalise_transform(rigid_transformation)
+        # if normalise:
+        #     rigid_transformation = self.unnormalise_transform(rigid_transformation)
 
         return residual, rigid_transformation
