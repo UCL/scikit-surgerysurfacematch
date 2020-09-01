@@ -68,4 +68,4 @@ def test_point_cloud_registration():
     pu.reproject_and_save(left_undistorted, registration, point_cloud, left_intrinsics,
                           output_file='tests/output/open_cas_tmi_registered.png')
 
-    assert residual < 5.0
+    assert residual < 7.0

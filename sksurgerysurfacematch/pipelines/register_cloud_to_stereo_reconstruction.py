@@ -65,22 +65,22 @@ class Register3DToStereoVideo:
         self.voxel_reduction = voxel_reduction
 
     def register(self,
-                 point_cloud: np.ndarray,
+                 reference_cloud: np.ndarray,
                  left_image: np.ndarray,
                  right_image: np.ndarray,
-                 initial_transform: np.ndarray = None
+                 initial_ref2recon: np.ndarray = None
                  ):
         """
         Main method to do a single 3D cloud to 2D stereo video registration.
 
         Camera calibration parameters are in OpenCV format.
 
-        :param point_cloud: [Nx3] points, each row, x,y,z, e.g. from CT/MR.
+        :param reference_cloud: [Nx3] points, each row, x,y,z, e.g. from CT/MR.
         :param left_image: undistorted, BGR image
         :param right_image: undistorted, BGR image
-        :param initial_transform: [4x4] of initial rigid transform.
-        :return: residual, [4x4] transform, of point_cloud to left camera space,
-        and [Mx6] reconstructed point cloud, as [x, y, z, r, g, b] rows.
+        :param initial_ref2recon: [4x4] of initial rigid transform.
+        :return: residual, [4x4] transform, of reference_cloud to left camera \
+        space, and [Mx6] reconstructed point cloud, as [x, y, z, r, g, b] rows.
         """
         left_mask = None
 
@@ -135,8 +135,8 @@ class Register3DToStereoVideo:
                     self.voxel_reduction[2])
 
         residual, transform = ru.do_rigid_registration(recon_points,
-                                                       point_cloud,
+                                                       reference_cloud,
                                                        self.rigid_registration,
-                                                       initial_transform)
+                                                       initial_ref2recon)
 
         return residual, transform, reconstruction
