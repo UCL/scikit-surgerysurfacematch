@@ -53,11 +53,11 @@ def test_point_cloud_registration():
                                     voxel_reduction=[5, 5, 5]
                                     )
 
-    residual, registration, points = reg_points_to_vid.register(point_cloud,
-                                                                left_undistorted,
-                                                                right_undistorted,
-                                                                model_to_camera
-                                                                )
+    residual, registration, points, full_recon = reg_points_to_vid.register(point_cloud,
+                                                                            left_undistorted,
+                                                                            right_undistorted,
+                                                                            model_to_camera
+                                                                            )
 
     print(f'Model: {pointcloud_file}')
     print(f'{len(point_cloud)} points in reference point cloud')

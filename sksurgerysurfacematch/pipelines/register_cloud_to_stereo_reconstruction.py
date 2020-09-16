@@ -2,6 +2,7 @@
 
 """ Pipeline to register 3D point cloud to 2D stereo video """
 
+from typing import Tuple
 import numpy as np
 import sksurgerypclpython as pclp
 import sksurgerysurfacematch.utils.registration_utils as ru
@@ -69,7 +70,7 @@ class Register3DToStereoVideo:
                  left_image: np.ndarray,
                  right_image: np.ndarray,
                  initial_ref2recon: np.ndarray = None
-                 ):
+                 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Main method to do a single 3D cloud to 2D stereo video registration.
 
@@ -80,7 +81,8 @@ class Register3DToStereoVideo:
         :param right_image: undistorted, BGR image
         :param initial_ref2recon: [4x4] of initial rigid transform.
         :return: residual, [4x4] transform, of reference_cloud to left camera \
-        space, and [Mx6] reconstructed point cloud, as [x, y, z, r, g, b] rows.
+        space, [Mx3] downsampled xyz points and [Mx6] reconstructed point \
+            cloud, as [x, y, z, r, g, b] rows.
         """
         left_mask = None
 
@@ -99,7 +101,7 @@ class Register3DToStereoVideo:
             left_mask = np.ones((left_image.shape[0],
                                  left_image.shape[1])) * 255
 
-        reconstruction = \
+        full_reconstruction = \
             self.surface_reconstructor.reconstruct(left_image,
                                                    self.left_camera_matrix,
                                                    self.left_dist_coeffs,
@@ -111,32 +113,32 @@ class Register3DToStereoVideo:
                                                    left_mask
                                                    )
 
-        recon_points = reconstruction[:, 0:3]
+        recon_xyz = full_reconstruction[:, 0:3]
 
         if self.z_range is not None:
-            recon_points = pclp.pass_through_filter(recon_points,
-                                                    'z',
-                                                    self.z_range[0],
-                                                    self.z_range[1],
-                                                    True)
+            recon_xyz = pclp.pass_through_filter(recon_xyz,
+                                                 'z',
+                                                 self.z_range[0],
+                                                 self.z_range[1],
+                                                 True)
 
         if self.radius_removal is not None:
-            recon_points = \
-                pclp.radius_removal_filter(recon_points,
+            recon_xyz = \
+                pclp.radius_removal_filter(recon_xyz,
                                            self.radius_removal[0],
                                            self.radius_removal[1])
 
         if self.voxel_reduction is not None:
-            recon_points = \
+            recon_xyz = \
                 pclp.down_sample_points(
-                    recon_points,
+                    recon_xyz,
                     self.voxel_reduction[0],
                     self.voxel_reduction[1],
                     self.voxel_reduction[2])
 
-        residual, transform = ru.do_rigid_registration(recon_points,
+        residual, transform = ru.do_rigid_registration(recon_xyz,
                                                        reference_cloud,
                                                        self.rigid_registration,
                                                        initial_ref2recon)
 
-        return residual, transform, recon_points
+        return residual, transform, recon_xyz, full_reconstruction
