@@ -139,4 +139,4 @@ class Register3DToStereoVideo:
                                                        self.rigid_registration,
                                                        initial_ref2recon)
 
-        return residual, transform, reconstruction
+        return residual, transform, recon_points
