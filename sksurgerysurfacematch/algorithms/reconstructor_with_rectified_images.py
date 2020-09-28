@@ -18,18 +18,25 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
     rectification for you, and calls through to the _compute_disparity()
     method that derived classes must implement.
     """
-    def __init__(self):
+    def __init__(self,
+                 lower_disparity_multiplier=0.75,
+                 upper_disparity_multiplier=2.0):
         """
         Constructor creates some member variables, so this class
         becomes statefull. You call reconstruct() once, and then
         you can call extract multiple times with different masks
         to pull out different subsets of data.
+
+        :param lower_disparity_multiplier: min=median - (this * std).
+        :param upper_disparity_multiplier: max=median + (this * std).
         """
         super().__init__()
         self.disparity = None
         self.points = None
         self.rgb_image = None
         self.r_1 = None
+        self.lower_disparity_multiplier = lower_disparity_multiplier
+        self.upper_disparity_multiplier = upper_disparity_multiplier
 
     # pylint:disable=too-many-arguments
     def reconstruct(self,
@@ -97,19 +104,16 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         # Need to remap the mask if we have one
         if left_mask is not None:
 
-            # Can't remap a boolean array, so have to convert to uint8
-            if left_mask.dtype == bool:
-                left_mask = np.uint8(left_mask)
-
             left_mask = cv2.remap(left_mask, undistort_rectify_map_l_x,
-                                  undistort_rectify_map_l_y, cv2.INTER_LINEAR)
+                                  undistort_rectify_map_l_y, cv2.INTER_NEAREST)
 
         self.disparity = self._compute_disparity(left_rectified,
                                                  right_rectified)
 
         print(f'Disparity: {self.disparity.shape}')
+
         self.points = cv2.reprojectImageTo3D(self.disparity, q_mat)
-        self.rgb_image = cv2.cvtColor(left_image, cv2.COLOR_BGR2RGB)
+        self.rgb_image = cv2.cvtColor(left_rectified, cv2.COLOR_BGR2RGB)
 
         # Calls method below to extract data.
         return self.extract(left_mask)
@@ -125,9 +129,29 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         :return: [Nx6] point cloud where the 6 columns
         are x, y, z in left camera space, followed by r, g, b colours.
         """
-        mask = self.disparity > self.disparity.min()
+
+        median_disp = np.median(self.disparity)
+        std_dev_disp = np.std(self.disparity)
+        lower_bound = (median_disp - (self.lower_disparity_multiplier
+                                              * std_dev_disp))
+        upper_bound = (median_disp + (self.upper_disparity_multiplier
+                                              * std_dev_disp))
+        mask = np.logical_and(self.disparity > lower_bound,
+                              self.disparity < upper_bound)
+
+        print("Disparity, min=" + str(self.disparity.min())
+              + ", max=" + str(self.disparity.max())
+              + ", med=" + str(np.median(self.disparity))
+              + ", std=" + str(np.std(self.disparity))
+              + ", lower=" + str(lower_bound)
+              + ", upper=" + str(upper_bound)
+              )
 
         if left_mask is not None:
+
+            if left_mask.dtype != bool:
+                left_mask = left_mask > 0
+
             mask = np.logical_and(mask, left_mask)
 
         out_points = self.points[mask]

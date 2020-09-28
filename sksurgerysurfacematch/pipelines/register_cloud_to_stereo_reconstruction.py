@@ -91,11 +91,10 @@ class Register3DToStereoVideo:
 
         if self.video_segmentor is not None:
             dynamic_mask = self.video_segmentor.segment(left_image)
-
             if left_mask is None:
                 left_mask = dynamic_mask
             else:
-                left_mask = np.logical_and(left_mask, dynamic_mask)
+                left_mask = np.bitwise_and(left_mask, dynamic_mask)
 
         if left_mask is None:
             left_mask = np.ones((left_image.shape[0],
@@ -122,12 +121,6 @@ class Register3DToStereoVideo:
                                                  self.z_range[1],
                                                  True)
 
-        if self.radius_removal is not None:
-            recon_xyz = \
-                pclp.radius_removal_filter(recon_xyz,
-                                           self.radius_removal[0],
-                                           self.radius_removal[1])
-
         if self.voxel_reduction is not None:
             recon_xyz = \
                 pclp.down_sample_points(
@@ -135,6 +128,12 @@ class Register3DToStereoVideo:
                     self.voxel_reduction[0],
                     self.voxel_reduction[1],
                     self.voxel_reduction[2])
+
+        if self.radius_removal is not None:
+            recon_xyz = \
+                pclp.radius_removal_filter(recon_xyz,
+                                           self.radius_removal[0],
+                                           self.radius_removal[1])
 
         residual, transform = ru.do_rigid_registration(recon_xyz,
                                                        reference_cloud,
