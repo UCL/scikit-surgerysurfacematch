@@ -107,13 +107,14 @@ class Register3DToMosaicedStereoVideo:
         :param right_image: undistorted, BGR image
         """
         left_mask = np.ones((left_image.shape[0],
-                             left_image.shape[1])) * 255
+                             left_image.shape[1]), dtype=np.uint8) * 255
 
         if self.video_segmentor is not None:
             left_mask = self.video_segmentor.segment(left_image)
+            left_mask = 255 * (left_mask > 0)
 
         if self.left_static_mask is not None:
-            left_mask = np.logical_and(left_mask, self.left_static_mask)
+            left_mask = np.bitwise_and(left_mask, self.left_static_mask)
 
         orb = cv2.ORB_create()
 
