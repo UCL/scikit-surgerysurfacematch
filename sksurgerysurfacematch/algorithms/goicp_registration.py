@@ -90,8 +90,8 @@ class RigidRegistration(rr.RigidRegistration):
         self.num_moving_points = num_moving_points
 
     def register(self,
-                 fixed_cloud: np.ndarray,
-                 moving_cloud: np.ndarray) -> np.ndarray:
+                 moving_cloud: np.ndarray,
+                 fixed_cloud: np.ndarray) -> np.ndarray:
         """
         Uses GoICP library, wrapped in scikit-surgerygoicp.
 
