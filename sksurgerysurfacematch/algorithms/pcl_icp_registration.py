@@ -44,23 +44,23 @@ class RigidRegistration(rr.RigidRegistration):
         self.use_lm_icp = use_lm_icp
 
     def register(self,
-                 source_cloud: np.ndarray,
-                 target_cloud: np.ndarray,
+                 moving_cloud: np.ndarray,
+                 fixed_cloud: np.ndarray,
                  ):
         """
         Uses PCL library, wrapped in scikit-surgerypclcpp.
 
-        :param source_cloud: [Nx3] source/moving point cloud.
-        :param target_cloud: [Mx3] target/fixed point cloud.
+        :param moving_cloud: [Nx3] source/moving point cloud.
+        :param fixed_cloud: [Mx3] target/fixed point cloud.
 
         :return: [4x4] transformation matrix, moving-to-fixed space.
         """
-        transformed_source = copy.deepcopy(source_cloud)
+        transformed_source = copy.deepcopy(moving_cloud)
 
         transform = np.eye(4)
 
-        residual = pclp.icp(source_cloud,
-                            target_cloud,
+        residual = pclp.icp(moving_cloud,
+                            fixed_cloud,
                             self.max_iterations,
                             self.max_correspondence_threshold,
                             self.transformation_epsilon,
