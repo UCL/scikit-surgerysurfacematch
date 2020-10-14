@@ -77,17 +77,21 @@ class RigidRegistration(rr.RigidRegistration):
     :param dt_factor: GoICP distance transform factor
     """
 
-    def __init__(self, dt_size=300, dt_factor=2.0):
+    def __init__(self,
+                 dt_size: int = 200,
+                 dt_factor: float = 2.0,
+                 normalise: bool = True,
+                 num_moving_points: int = 1000):
 
         self.goicp = GoICP()
         self.goicp.setDTSizeAndFactor(dt_size, dt_factor)
 
+        self.normalise = normalise
+        self.num_moving_points = num_moving_points
+
     def register(self,
                  fixed_cloud: np.ndarray,
-                 moving_cloud: np.ndarray,
-                 normalise: bool = True,
-                 num_moving_points: int = 1000
-                 ) -> np.ndarray:
+                 moving_cloud: np.ndarray) -> np.ndarray:
         """
         Uses GoICP library, wrapped in scikit-surgerygoicp.
 
@@ -102,14 +106,18 @@ class RigidRegistration(rr.RigidRegistration):
         LOGGER.info("Fixed cloud shape %s", fixed_cloud.shape)
         LOGGER.info("Moving cloud shape %s", moving_cloud.shape)
 
-        if normalise:
+        if self.normalise:
             fixed_cloud, moving_cloud, scale, trans_fixed, trans_moving = \
                 demean_and_normalise(fixed_cloud, moving_cloud)
 
-        if num_moving_points > 0:
+        if self.num_moving_points > 0:
             n_moving = moving_cloud.shape[0]
+
+            if self.num_moving_points > n_moving:
+                self.num_moving_points = n_moving
+
             idxs = np.random.choice(range(n_moving),
-                                    num_moving_points,
+                                    self.num_moving_points,
                                     replace=False)
             moving_cloud = moving_cloud[idxs, :]
 
@@ -139,7 +147,7 @@ class RigidRegistration(rr.RigidRegistration):
         # Tf/Tm are translation matrices, when demeaning fixed/moving points
         # S is scaling matrix when normalising fixed/moving
         #  GoICP is resultant matrix from GoICP.register()
-        if normalise:
+        if self.normalise:
 
             moving_to_fixed = trans_fixed @ \
                   scale @ \

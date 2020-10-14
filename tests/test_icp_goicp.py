@@ -32,7 +32,7 @@ def test_goicp_reg():
     goicp_reg = goicp.RigidRegistration()
 
     # Data already normalsied
-    residual, moving_to_fixed = goicp_reg.register(fixed, moving, True)
+    residual, moving_to_fixed = goicp_reg.register(fixed, moving)
     out_points = transform_points(moving, moving_to_fixed)
 
     np.savetxt('tests/output/goicp_bunny.xyz', out_points)
@@ -69,7 +69,7 @@ def test_goicp_known_transform():
 
     moving = transform_points(fixed, fixed_to_moving)
     goicp_reg = goicp.RigidRegistration()
-    residual, moving_to_fixed = goicp_reg.register(fixed, moving, True)
+    residual, moving_to_fixed = goicp_reg.register(fixed, moving)
 
 
     assert np.allclose(moving_to_fixed, np.linalg.inv(fixed_to_moving), atol=1e-3)
