@@ -133,9 +133,9 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         median_disp = np.median(self.disparity)
         std_dev_disp = np.std(self.disparity)
         lower_bound = (median_disp - (self.lower_disparity_multiplier
-                                              * std_dev_disp))
+                                      * std_dev_disp))
         upper_bound = (median_disp + (self.upper_disparity_multiplier
-                                              * std_dev_disp))
+                                      * std_dev_disp))
         mask = np.logical_and(self.disparity > lower_bound,
                               self.disparity < upper_bound)
 
