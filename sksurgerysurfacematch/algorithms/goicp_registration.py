@@ -6,7 +6,7 @@
 
 import logging
 import numpy as np
-from sksurgerygoicppython import  GoICP, POINT3D
+from sksurgerygoicppython import  GoICP, POINT3D, ROTNODE, TRANSNODE
 import sksurgerysurfacematch.interfaces.rigid_registration as rr
 
 LOGGER = logging.getLogger(__name__)
@@ -69,22 +69,61 @@ def demean_and_normalise(points_a: np.ndarray,
     return a_normalised, b_normalised, scale_matrix, \
          translate_a_matrix, translate_b_matrix
 
+def set_rotnode(limits_degrees) -> ROTNODE:
+    """ Setup a ROTNODE with upper/lower rotation limits"""
+
+    lower_degrees = limits_degrees[0]
+    upper_degrees = limits_degrees[1]
+
+    l_rads = lower_degrees * 3.14 / 180
+    u_rads = upper_degrees * 3.14 / 180
+
+    r_node = ROTNODE()
+
+    r_node.a = l_rads
+    r_node.b = l_rads
+    r_node.c = l_rads
+    r_node.w = u_rads - l_rads
+
+    return r_node
+
+def set_transnode(trans_limits) -> TRANSNODE:
+    """ Setup a TRANSNODE with upper/lower limits"""
+
+    t_node = TRANSNODE()
+
+    t_node.x = trans_limits[0]
+    t_node.y = trans_limits[0]
+    t_node.z = trans_limits[0]
+
+    t_node.w = trans_limits[1] - trans_limits[0]
+
+    return t_node
+
 class RigidRegistration(rr.RigidRegistration):
     """
     Class that uses GoICP implementation to register fixed/moving clouds.
     At the moment, we are just relying on all default parameters.
     :param dt_size: Nodes per dimension of distance transform
     :param dt_factor: GoICP distance transform factor
+    TODO: rest of params
     """
 
     def __init__(self,
                  dt_size: int = 200,
                  dt_factor: float = 2.0,
                  normalise: bool = True,
-                 num_moving_points: int = 1000):
+                 num_moving_points: int = 1000,
+                 rotation_limits = [-45, 45],
+                 trans_limits = [-0.5, 0.5]):
+
+        r_node = set_rotnode(rotation_limits)
+        t_node = set_transnode(trans_limits)
 
         self.goicp = GoICP()
         self.goicp.setDTSizeAndFactor(dt_size, dt_factor)
+        self.goicp.setInitNodeRot(r_node)
+        self.goicp.setInitNodeTrans(t_node)
 
         self.normalise = normalise
         self.num_moving_points = num_moving_points
