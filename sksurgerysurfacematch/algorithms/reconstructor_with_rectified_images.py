@@ -81,7 +81,6 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
                               (width, height),
                               left_to_right_rmat,
                               left_to_right_tvec,
-                              alpha=0
                               )
 
         undistort_rectify_map_l_x, undistort_rectify_map_l_y = \
