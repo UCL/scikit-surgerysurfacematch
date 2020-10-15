@@ -29,7 +29,7 @@ def test_goicp_reg():
     fixed = np.loadtxt('tests/data/icp/rabbit_full.xyz')
     moving = np.loadtxt('tests/data/icp/rabbit_partial.xyz')
 
-    goicp_reg = goicp.RigidRegistration()
+    goicp_reg = goicp.RigidRegistration(rotation_limits=[-180, 180])
 
     # Data already normalsied
     residual, moving_to_fixed = goicp_reg.register(moving, fixed)
@@ -68,7 +68,7 @@ def test_goicp_known_transform():
                                         [0, 0, 0, 1]])
 
     moving = transform_points(fixed, fixed_to_moving)
-    goicp_reg = goicp.RigidRegistration()
+    goicp_reg = goicp.RigidRegistration(rotation_limits=[-180, 180])
     residual, moving_to_fixed = goicp_reg.register(moving, fixed)
 
 
