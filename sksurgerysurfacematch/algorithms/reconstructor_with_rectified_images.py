@@ -38,6 +38,10 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         self.lower_disparity_multiplier = lower_disparity_multiplier
         self.upper_disparity_multiplier = upper_disparity_multiplier
 
+        self.left_rectified = None
+        self.right_rectified = None
+        self.left_mask = None
+
     # pylint:disable=too-many-arguments
     def reconstruct(self,
                     left_image: np.ndarray,

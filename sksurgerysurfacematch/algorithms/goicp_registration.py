@@ -108,14 +108,14 @@ class RigidRegistration(rr.RigidRegistration):
     :param dt_factor: GoICP distance transform factor
     TODO: rest of params
     """
-
+    #pylint:disable=dangerous-default-value
     def __init__(self,
                  dt_size: int = 200,
                  dt_factor: float = 2.0,
                  normalise: bool = True,
                  num_moving_points: int = 1000,
-                 rotation_limits = [-45, 45],
-                 trans_limits = [-0.5, 0.5]):
+                 rotation_limits=[-45, 45],
+                 trans_limits=[-0.5, 0.5]):
 
         r_node = set_rotnode(rotation_limits)
         t_node = set_transnode(trans_limits)
