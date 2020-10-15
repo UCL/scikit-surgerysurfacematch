@@ -19,7 +19,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
     method that derived classes must implement.
     """
     def __init__(self,
-                 lower_disparity_multiplier=0.75,
+                 lower_disparity_multiplier=2.0,
                  upper_disparity_multiplier=2.0):
         """
         Constructor creates some member variables, so this class
@@ -80,7 +80,8 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
                               right_dist_coeffs,
                               (width, height),
                               left_to_right_rmat,
-                              left_to_right_tvec
+                              left_to_right_tvec,
+                              alpha=0  # Only keep points visible in both
                               )
 
         undistort_rectify_map_l_x, undistort_rectify_map_l_y = \
