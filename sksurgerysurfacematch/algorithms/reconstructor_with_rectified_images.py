@@ -19,7 +19,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
     method that derived classes must implement.
     """
     def __init__(self,
-                 lower_disparity_multiplier=0.75,
+                 lower_disparity_multiplier=2.0,
                  upper_disparity_multiplier=2.0):
         """
         Constructor creates some member variables, so this class
@@ -80,7 +80,8 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
                               right_dist_coeffs,
                               (width, height),
                               left_to_right_rmat,
-                              left_to_right_tvec
+                              left_to_right_tvec,
+                              alpha=0
                               )
 
         undistort_rectify_map_l_x, undistort_rectify_map_l_y = \
@@ -95,25 +96,27 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
                                         r_2, p_2,
                                         (width, height), cv2.CV_32FC1)
 
-        left_rectified = cv2.remap(left_image, undistort_rectify_map_l_x,
-                                   undistort_rectify_map_l_y, cv2.INTER_LINEAR)
+        self.left_rectified = \
+            cv2.remap(left_image, undistort_rectify_map_l_x,
+                      undistort_rectify_map_l_y, cv2.INTER_LINEAR)
 
-        right_rectified = cv2.remap(right_image, undistort_rectify_map_r_x,
-                                    undistort_rectify_map_r_y, cv2.INTER_LINEAR)
+        self.right_rectified = \
+            cv2.remap(right_image, undistort_rectify_map_r_x,
+                      undistort_rectify_map_r_y, cv2.INTER_LINEAR)
 
         # Need to remap the mask if we have one
+        self.left_mask = left_mask
         if left_mask is not None:
 
-            left_mask = cv2.remap(left_mask, undistort_rectify_map_l_x,
-                                  undistort_rectify_map_l_y, cv2.INTER_NEAREST)
+            self.left_mask = \
+                cv2.remap(left_mask, undistort_rectify_map_l_x,
+                          undistort_rectify_map_l_y, cv2.INTER_NEAREST)
 
-        self.disparity = self._compute_disparity(left_rectified,
-                                                 right_rectified)
-
-        print(f'Disparity: {self.disparity.shape}')
+        self.disparity = self._compute_disparity(self.left_rectified,
+                                                 self.right_rectified)
 
         self.points = cv2.reprojectImageTo3D(self.disparity, q_mat)
-        self.rgb_image = cv2.cvtColor(left_rectified, cv2.COLOR_BGR2RGB)
+        self.rgb_image = cv2.cvtColor(self.left_rectified, cv2.COLOR_BGR2RGB)
 
         # Calls method below to extract data.
         return self.extract(left_mask)
