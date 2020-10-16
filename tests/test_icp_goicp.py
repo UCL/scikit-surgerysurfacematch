@@ -6,6 +6,7 @@ target_data = np.loadtxt('tests/data/icp/data_rand.txt')
 
 import sksurgerysurfacematch.algorithms.pcl_icp_registration as pir
 import sksurgerysurfacematch.algorithms.goicp_registration as goicp
+import sksurgerycore.transforms.matrix as m
 
 def transform_points(points, transform):
     out_points = \
@@ -29,7 +30,7 @@ def test_goicp_reg():
     fixed = np.loadtxt('tests/data/icp/rabbit_full.xyz')
     moving = np.loadtxt('tests/data/icp/rabbit_partial.xyz')
 
-    goicp_reg = goicp.RigidRegistration()
+    goicp_reg = goicp.RigidRegistration(rotation_limits=[-180, 180])
 
     # Data already normalsied
     residual, moving_to_fixed = goicp_reg.register(moving, fixed)
@@ -68,8 +69,40 @@ def test_goicp_known_transform():
                                         [0, 0, 0, 1]])
 
     moving = transform_points(fixed, fixed_to_moving)
-    goicp_reg = goicp.RigidRegistration()
+    goicp_reg = goicp.RigidRegistration(rotation_limits=[-180, 180])
     residual, moving_to_fixed = goicp_reg.register(moving, fixed)
 
 
     assert np.allclose(moving_to_fixed, np.linalg.inv(fixed_to_moving), atol=1e-3)
+
+def test_goicp_rotation_limit():
+    fixed = np.loadtxt('tests/data/icp/rabbit_full.xyz')
+    fixed_to_moving = m.construct_rx_matrix(45, False)
+
+    moving = np.matmul(fixed_to_moving, np.transpose(fixed))
+    moving = np.transpose(moving)
+
+    goicp_reg = goicp.RigidRegistration(rotation_limits=[-10, 10])
+    
+    residual, moving_to_fixed = goicp_reg.register(moving, fixed)
+
+    #out_points = transform_points(moving, moving_to_fixed)
+    #np.savetxt('tests/output/goicp_bunny_45_limit.xyz', out_points)
+
+    assert residual == 0.0
+
+def test_goicp_bad_rotation_limit():
+    fixed = np.loadtxt('tests/data/icp/rabbit_full.xyz')
+    fixed_to_moving = m.construct_rx_matrix(55, False)
+
+    moving = np.matmul(fixed_to_moving, np.transpose(fixed))
+    moving = np.transpose(moving)
+
+    goicp_reg = goicp.RigidRegistration(rotation_limits=[-10, 10])
+    
+    residual, moving_to_fixed = goicp_reg.register(moving[::500,:], fixed[::500,:])
+    
+    #out_points = transform_points(moving, moving_to_fixed)
+    #np.savetxt('tests/output/goicp_bunny_bad.xyz', out_points)
+
+    assert residual > 0
