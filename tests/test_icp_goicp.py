@@ -75,34 +75,34 @@ def test_goicp_known_transform():
 
     assert np.allclose(moving_to_fixed, np.linalg.inv(fixed_to_moving), atol=1e-3)
 
+# The GoICP algoritm runs standard ICP first, which doesn't take consideration
+# of the rotation/translation limits.
+# So need to make sure that moving data is such that we can't get a good ICP
+# fit initally, in order to test the rotaiton/translation limits.
 def test_goicp_rotation_limit():
     fixed = np.loadtxt('tests/data/icp/rabbit_full.xyz')
-    fixed_to_moving = m.construct_rx_matrix(45, False)
+    moving = np.loadtxt('tests/data/icp/partial_rabbit_aligned.xyz')
 
-    moving = np.matmul(fixed_to_moving, np.transpose(fixed))
+    tf = m.construct_rx_matrix(90, False)
+    moving = np.matmul(tf, np.transpose(moving))
     moving = np.transpose(moving)
 
-    goicp_reg = goicp.RigidRegistration(rotation_limits=[-10, 10])
-    
+    goicp_reg = goicp.RigidRegistration(rotation_limits=[-90, 90])
+
     residual, moving_to_fixed = goicp_reg.register(moving, fixed)
 
-    #out_points = transform_points(moving, moving_to_fixed)
-    #np.savetxt('tests/output/goicp_bunny_45_limit.xyz', out_points)
-
-    assert residual == 0.0
+    assert residual < 0.5
 
 def test_goicp_bad_rotation_limit():
     fixed = np.loadtxt('tests/data/icp/rabbit_full.xyz')
-    fixed_to_moving = m.construct_rx_matrix(55, False)
+    moving = np.loadtxt('tests/data/icp/partial_rabbit_aligned.xyz')
 
-    moving = np.matmul(fixed_to_moving, np.transpose(fixed))
+    tf = m.construct_rx_matrix(90, False)
+    moving = np.matmul(tf, np.transpose(moving))
     moving = np.transpose(moving)
 
-    goicp_reg = goicp.RigidRegistration(rotation_limits=[-10, 10])
-    
-    residual, moving_to_fixed = goicp_reg.register(moving[::500,:], fixed[::500,:])
-    
-    #out_points = transform_points(moving, moving_to_fixed)
-    #np.savetxt('tests/output/goicp_bunny_bad.xyz', out_points)
+    goicp_reg = goicp.RigidRegistration(rotation_limits=[-60, 60])
 
-    assert residual > 0
+    residual, moving_to_fixed = goicp_reg.register(moving, fixed)
+
+    assert residual > 2
