@@ -47,10 +47,8 @@ def test_stoyanov_and_sgbm():
 
     points = reconstructor.reconstruct(left_undistorted,   # should be undistorted, but doesn't need to be rectified
                                        left_intrinsics,
-                                       None,               # as not used.
                                        right_undistorted,  # should be undistorted, but doesn't need to be rectified
                                        right_intrinsics,
-                                       None,               # as not used.
                                        rotation_matrix,
                                        translation_vector,
                                        None)
@@ -73,10 +71,8 @@ def test_stoyanov_and_sgbm():
     # Now try Stoyanov masked version.
     points = reconstructor.reconstruct(left_undistorted,   # should be undistorted, but doesn't need to be rectified
                                        left_intrinsics,
-                                       None,               # as not used.
                                        right_undistorted,  # should be undistorted, but doesn't need to be rectified
                                        right_intrinsics,
-                                       None,               # as not used.
                                        rotation_matrix,
                                        translation_vector,
                                        mask_image)         # MUST be single channel
@@ -89,10 +85,8 @@ def test_stoyanov_and_sgbm():
     reconstructor = sgbm.SGBMReconstructor()
     points = reconstructor.reconstruct(left_undistorted,
                                        left_intrinsics,
-                                       left_dist_coeffs,   # does need distortion coefficients
                                        right_undistorted,
                                        right_intrinsics,
-                                       right_dist_coeffs,  # does need distortion coefficients
                                        rotation_matrix,
                                        translation_vector,
                                        left_mask=None)
@@ -105,10 +99,8 @@ def test_stoyanov_and_sgbm():
 
     points = reconstructor.reconstruct(left_undistorted,
                                        left_intrinsics,
-                                       left_dist_coeffs,   # does need distortion coefficients
                                        right_undistorted,
                                        right_intrinsics,
-                                       right_dist_coeffs,  # does need distortion coefficients
                                        rotation_matrix,
                                        translation_vector,
                                        left_mask=mask_image)
