@@ -16,10 +16,8 @@ class StereoReconstructor:
     def reconstruct(self,
                     left_image: np.ndarray,
                     left_camera_matrix: np.ndarray,
-                    left_dist_coeffs: np.ndarray,
                     right_image: np.ndarray,
                     right_camera_matrix: np.ndarray,
-                    right_dist_coeffs: np.ndarray,
                     left_to_right_rmat: np.ndarray,
                     left_to_right_tvec: np.ndarray,
                     left_mask: np.ndarray = None
@@ -31,10 +29,8 @@ class StereoReconstructor:
 
         :param left_image: left image, BGR
         :param left_camera_matrix: [3x3] camera matrix
-        :param left_dist_coeffs: [1xN] distortion coefficients
         :param right_image: right image, BGR
         :param right_camera_matrix: [3x3] camera matrix
-        :param right_dist_coeffs: [1xN] distortion coefficients
         :param left_to_right_rmat: [3x3] rotation matrix
         :param left_to_right_tvec: [3x1] translation vector
         :param left_mask: mask image, single channel, same size as left_image
