@@ -20,7 +20,8 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
     """
     def __init__(self,
                  lower_disparity_multiplier=2.0,
-                 upper_disparity_multiplier=2.0):
+                 upper_disparity_multiplier=2.0,
+                 alpha: float = 0):
         """
         Constructor creates some member variables, so this class
         becomes statefull. You call reconstruct() once, and then
@@ -29,6 +30,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
 
         :param lower_disparity_multiplier: min=median - (this * std).
         :param upper_disparity_multiplier: max=median + (this * std).
+        :param alpha: opencv alpha parameter for StereoRectify
         """
         super().__init__()
         self.disparity = None
@@ -41,6 +43,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
         self.left_rectified = None
         self.right_rectified = None
         self.left_mask = None
+        self.alpha = alpha
 
     # pylint:disable=too-many-arguments
     def reconstruct(self,
@@ -50,7 +53,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
                     right_camera_matrix: np.ndarray,
                     left_to_right_rmat: np.ndarray,
                     left_to_right_tvec: np.ndarray,
-                    left_mask: np.ndarray = None
+                    left_mask: np.ndarray = None,
                     ):
         """
         Implementation of stereo surface reconstruction that takes
@@ -81,6 +84,7 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
                               (width, height),
                               left_to_right_rmat,
                               left_to_right_tvec,
+                              alpha=self.alpha
                               )
 
         undistort_rectify_map_l_x, undistort_rectify_map_l_y = \
