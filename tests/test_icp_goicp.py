@@ -6,6 +6,7 @@ target_data = np.loadtxt('tests/data/icp/data_rand.txt')
 
 import sksurgerysurfacematch.algorithms.pcl_icp_registration as pir
 import sksurgerysurfacematch.algorithms.goicp_registration as goicp
+import sksurgerycore.transforms.matrix as m
 
 def transform_points(points, transform):
     out_points = \
@@ -73,3 +74,35 @@ def test_goicp_known_transform():
 
 
     assert np.allclose(moving_to_fixed, np.linalg.inv(fixed_to_moving), atol=1e-3)
+
+# The GoICP algoritm runs standard ICP first, which doesn't take consideration
+# of the rotation/translation limits.
+# So need to make sure that moving data is such that we can't get a good ICP
+# fit initally, in order to test the rotaiton/translation limits.
+def test_goicp_rotation_limit():
+    fixed = np.loadtxt('tests/data/icp/rabbit_full.xyz')
+    moving = np.loadtxt('tests/data/icp/partial_rabbit_aligned.xyz')
+
+    tf = m.construct_rx_matrix(90, False)
+    moving = np.matmul(tf, np.transpose(moving))
+    moving = np.transpose(moving)
+
+    goicp_reg = goicp.RigidRegistration(rotation_limits=[-90, 90])
+
+    residual, moving_to_fixed = goicp_reg.register(moving, fixed)
+
+    assert residual < 0.5
+
+def test_goicp_bad_rotation_limit():
+    fixed = np.loadtxt('tests/data/icp/rabbit_full.xyz')
+    moving = np.loadtxt('tests/data/icp/partial_rabbit_aligned.xyz')
+
+    tf = m.construct_rx_matrix(90, False)
+    moving = np.matmul(tf, np.transpose(moving))
+    moving = np.transpose(moving)
+
+    goicp_reg = goicp.RigidRegistration(rotation_limits=[-60, 60])
+
+    residual, moving_to_fixed = goicp_reg.register(moving, fixed)
+
+    assert residual > 2
