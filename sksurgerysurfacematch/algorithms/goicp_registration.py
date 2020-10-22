@@ -84,7 +84,7 @@ def set_rotnode(limits_degrees) -> ROTNODE:
     r_node.b = l_rads
     r_node.c = l_rads
     r_node.w = u_rads - l_rads
-    
+
     print(f'RotNode.a = {r_node.a}, RotNode.w = {r_node.w}')
     return r_node
 
