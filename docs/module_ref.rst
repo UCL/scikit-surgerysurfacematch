@@ -1,5 +1,5 @@
 Algorithms
-==========
+^^^^^^^^^^
 
 ICP
 ---
@@ -40,7 +40,7 @@ Stoyanov Stereo Recon
     :show-inheritance:
 
 Interfaces
-==========
+^^^^^^^^^^
 
 Rigid Registration
 ------------------
@@ -66,7 +66,7 @@ Video Segmentation
     :show-inheritance:
 
 Processing Pipelines
-====================
+^^^^^^^^^^^^^^^^^^^^
 
 Register Point Cloud To Stereo Images
 -------------------------------------
