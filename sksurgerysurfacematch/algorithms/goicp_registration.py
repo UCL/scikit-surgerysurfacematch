@@ -104,10 +104,26 @@ def set_transnode(trans_limits) -> TRANSNODE:
 class RigidRegistration(rr.RigidRegistration):
     """
     Class that uses GoICP implementation to register fixed/moving clouds.
-    At the moment, we are just relying on all default parameters.
-    :param dt_size: Nodes per dimension of distance transform
-    :param dt_factor: GoICP distance transform factor
-    TODO: rest of params
+
+    :param dt_size: Distance transform size, defaults to 200
+    :type dt_size: int, optional
+    :param dt_factor: Distance transform scale factor, defaults to 2.0
+    :type dt_factor: float, optional
+    :param normalise: Normalsie data before GoICP (recommended), \
+        the resultant transform is given back in 'normal' space, i.e. the \
+            noramlisation is reversed, defaults to True
+    :type normalise: bool, optional
+    :param num_moving_points: How many points to sample from moving point \
+        cloud (fewer is faster), defaults to 1000
+    :type num_moving_points: int, optional
+    :param rotation_limits: Limits on how much the moving cloud can rotate to \
+        find a good solution, defaults to [-45, 45]
+    :type rotation_limits: list, optional
+    :param trans_limits: Limits on how much the moving cloud can translate to \
+        find a good solution. If normalise=True, this translation is in [-1 1] \
+            space, defaults to [-0.5, 0.5]
+    :type trans_limits: list, optional
+
     """
     #pylint:disable=dangerous-default-value
     def __init__(self,
