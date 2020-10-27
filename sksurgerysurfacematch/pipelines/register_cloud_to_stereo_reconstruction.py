@@ -16,6 +16,21 @@ import sksurgerysurfacematch.interfaces.rigid_registration as rr
 class Register3DToStereoVideo:
     """
     Class for single-shot, registration of 3D point cloud to stereo video.
+    Uses Dependency Injection for each pluggable component.
+
+    :param video_segmentor: Optional class to pre-segment the video.
+    :param surface_reconstructor: Mandatory class to do reconstruction.
+    :param rigid_registration: Mandatory class to perform rigid alignment.
+    :param left_camera_matrix: [3x3] camera matrix.
+    :param right_camera_matrix: [3x3] camera matrix.
+    :param left_to_right_rmat: [3x3] left-to-right rotation matrix.
+    :param left_to_right_tvec: [1x3] left-to-right translation vector.
+    :param left_mask: a static mask to apply to stereo reconstruction.
+    :param z_range: [min range, max range] to limit reconstructed points.
+    :param radius_removal: [radius, number] to reject points with too few \
+    neighbours
+    :param voxel_reduction: [vx, vy, vz] parameters for PCL \
+    Voxel Grid reduction.
     """
     def __init__(self,
                  video_segmentor: vs.VideoSegmentor,
@@ -30,23 +45,7 @@ class Register3DToStereoVideo:
                  radius_removal: list = None,
                  voxel_reduction: list = None
                  ):
-        """
-        Uses Dependency Injection for each pluggable component.
 
-        :param video_segmentor: Optional class to pre-segment the video.
-        :param surface_reconstructor: Mandatory class to do reconstruction.
-        :param rigid_registration: Mandatory class to perform rigid alignment.
-        :param left_camera_matrix: [3x3] camera matrix.
-        :param right_camera_matrix: [3x3] camera matrix.
-        :param left_to_right_rmat: [3x3] left-to-right rotation matrix.
-        :param left_to_right_tvec: [1x3] left-to-right translation vector.
-        :param left_mask: a static mask to apply to stereo reconstruction.
-        :param z_range: [min range, max range] to limit reconstructed points.
-        :param radius_removal: [radius, number] to reject points with too few
-        neighbours
-        :param voxel_reduction: [vx, vy, vz] parameters for PCL
-        Voxel Grid reduction.
-        """
         self.video_segmentor = video_segmentor
         self.surface_reconstructor = surface_reconstructor
         self.rigid_registration = rigid_registration

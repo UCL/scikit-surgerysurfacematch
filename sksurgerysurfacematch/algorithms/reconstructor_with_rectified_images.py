@@ -17,21 +17,22 @@ class StereoReconstructorWithRectifiedImages(sr.StereoReconstructor):
     which are NOT already rectified. It's THIS class that does the
     rectification for you, and calls through to the _compute_disparity()
     method that derived classes must implement.
+
+    Constructor creates some member variables, so this class
+    becomes statefull. You call reconstruct() once, and then
+    you can call extract multiple times with different masks
+    to pull out different subsets of data.
+
+    :param lower_disparity_multiplier: min=median - (this * std), default = 2.0.
+    :param upper_disparity_multiplier: max=median + (this * std), default = 2.0.
+    :param apha: OpenCV alpha parameter, default = 0.
     """
     def __init__(self,
-                 lower_disparity_multiplier=2.0,
-                 upper_disparity_multiplier=2.0,
-                 alpha: float = 0):
-        """
-        Constructor creates some member variables, so this class
-        becomes statefull. You call reconstruct() once, and then
-        you can call extract multiple times with different masks
-        to pull out different subsets of data.
+                 lower_disparity_multiplier: float = 2.0,
+                 upper_disparity_multiplier: float = 2.0,
+                 alpha: float = 0
+                 ):
 
-        :param lower_disparity_multiplier: min=median - (this * std).
-        :param upper_disparity_multiplier: max=median + (this * std).
-        :param alpha: opencv alpha parameter for StereoRectify
-        """
         super().__init__()
         self.disparity = None
         self.points = None
