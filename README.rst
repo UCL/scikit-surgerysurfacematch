@@ -7,6 +7,8 @@ scikit-surgerysurfacematch
    :target: https://github.com/UCL/scikit-surgerysurfacematch
    :alt: Logo
 
+|
+
 .. image:: https://github.com/UCL/scikit-surgerysurfacematch/workflows/.github/workflows/ci.yml/badge.svg
    :target: https://github.com/UCL/scikit-surgerysurfacematch/actions
    :alt: GitHub Actions CI status
@@ -34,13 +36,13 @@ scikit-surgerysurfacematch contains algorithms that are useful in stereo reconst
 Features
 --------
 
-* Base classes (pure virtual interfaces), for video segmentation, stereo reconstruction, rigid registration / pose estimation. See ```sksurgerysurfacematch/algorithms```
-* A base class to handle rectification properly, and the right coordinate transformation, to save you the trouble.
-* Stereo reconstruction classes based on Stoyanov MICCAI 2010, and OpenCV SGBM reconstruction, using above interface, and both allowing for optional masking.
-* Rigid registration using PCL's ICP implementation, which is wrapped in scikit-surgerypclcpp
-* Rigid registration using GoICP, which is wrapeed in scikit-surgerygoicp
-* A pipeline to combine the above, segment a video pair, do reconstruction, and register to a 3D model, where each part can then be swapped with whatever implementation you want, as long as you implement the right interface.
-* A pipeline to take multiple stereo video snapshots, do surface reconstruction, mosaic them together, and then register to a 3D model. Again, each main component (video segmentation, surface reconstruction, rigid registration) is swappable. Inspired by: [Xiaohui Zhang's](https://doi.org/10.1007/s11548-019-01974-6) method.
+* `Base classes <https://scikit-surgerysurfacematch.readthedocs.io/en/latest/module_ref.html#interfaces>`_ (pure virtual interfaces), for video segmentation, stereo reconstruction, rigid registration / pose estimation.
+* `A base class <https://scikit-surgerysurfacematch.readthedocs.io/en/latest/module_ref.html#module-sksurgerysurfacematch.algorithms.reconstructor_with_rectified_images>`_ to handle rectification properly, and the right coordinate transformation, to save you the trouble.
+* Stereo reconstruction classes based on `Stoyanov MICCAI 2010 <https://scikit-surgerysurfacematch.readthedocs.io/en/latest/module_ref.html#stoyanov-stereo-recon>`_, and `OpenCV SGBM <https://scikit-surgerysurfacematch.readthedocs.io/en/latest/module_ref.html#module-sksurgerysurfacematch.algorithms.sgbm_reconstructor>`_ reconstruction, using above interface, and both allowing for optional masking.
+* Rigid registration using PCL's `ICP <https://scikit-surgerysurfacematch.readthedocs.io/en/latest/module_ref.html#module-sksurgerysurfacematch.algorithms.pcl_icp_registration>`_ implementation, which is wrapped in scikit-surgerypclcpp
+* Rigid registration using `GoICP <https://scikit-surgerysurfacematch.readthedocs.io/en/latest/module_ref.html#module-sksurgerysurfacematch.algorithms.goicp_registration>`_, which is wrapped in scikit-surgerygoicp
+* `A pipeline <https://scikit-surgerysurfacematch.readthedocs.io/en/latest/module_ref.html#module-sksurgerysurfacematch.pipelines.register_cloud_to_stereo_reconstruction>`_ to combine the above, segment a video pair, do reconstruction, and register to a 3D model, where each part can then be swapped with whatever implementation you want, as long as you implement the right interface.
+* `A pipeline <https://scikit-surgerysurfacematch.readthedocs.io/en/latest/module_ref.html#module-sksurgerysurfacematch.pipelines.register_cloud_to_stereo_mosaic>`_ to take multiple stereo video snapshots, do surface reconstruction, mosaic them together, and then register to a 3D model. Again, each main component (video segmentation, surface reconstruction, rigid registration) is swappable. Inspired by: [Xiaohui Zhang's](https://doi.org/10.1007/s11548-019-01974-6) method.
 
 .. features-end
 
